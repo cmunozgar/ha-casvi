@@ -1,5 +1,15 @@
 # Cambios
 
+## 0.3.0
+
+- Logotipo de Casvi para identificar el servicio.
+- Inicio con los últimos 10 mensajes y pestaña de buzón completo paginada.
+- Alumnos destinatarios en las filas y en la lectura de mensajes.
+- Pestaña por hijo con grupo, tutor, tutorías, compañeros y documentos.
+- Horario PDF dentro del panel mediante visor local PDF.js.
+- Acceso bajo demanda y respeto de la visibilidad para familias.
+- 31 pruebas automatizadas, verificación de consultas reales y pruebas del navegador con datos inventados.
+
 ## 0.2.0
 
 - Panel Colegio automático: menú, agenda y mensajes recientes con filtro de pendientes.

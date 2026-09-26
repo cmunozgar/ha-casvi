@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from homeassistant.exceptions import HomeAssistantError, Unauthorized
 from custom_components.casvi.notifications import MessageNotifications
-from custom_components.casvi.panel import ws_overview, ws_message
+from custom_components.casvi.panel import ws_overview, ws_message, ws_messages, ws_child, ws_document
 from custom_components.casvi.api import CasviClient
 
 
@@ -91,7 +91,7 @@ async def test_delivery_retries_bounded_and_disabled_targets_are_removed():
 def test_panel_commands_reject_non_admins():
     connection = MagicMock()
     connection.user.is_admin = False
-    for command in (ws_overview, ws_message):
+    for command in (ws_overview, ws_message, ws_messages, ws_child, ws_document):
         with pytest.raises(Unauthorized):
             command(MagicMock(), connection, {'id': 1})
     connection.send_result.assert_not_called()
@@ -99,7 +99,7 @@ def test_panel_commands_reject_non_admins():
 
 @pytest.mark.asyncio
 async def test_message_only_fetches_explicitly_selected_inbox_pair():
-    coordinator = SimpleNamespace(data={'messages': [row()]}, client=SimpleNamespace(read_message=AsyncMock(return_value={'mensaje':'<p>Hello</p>'})), async_request_refresh=AsyncMock())
+    coordinator = SimpleNamespace(children={}, data={'messages': [row()]}, client=SimpleNamespace(read_message=AsyncMock(return_value={'mensaje':'<p>Hello</p>'})), async_request_refresh=AsyncMock())
     hass = SimpleNamespace(data={'casvi': {'account': coordinator}})
     connection = MagicMock()
     # Exercise async handler below the framework auth/scheduling wrappers.
@@ -120,3 +120,92 @@ async def test_explicit_read_uses_detail_action_without_mark_read():
     client._request = AsyncMock(return_value={'success': True, 'data': {'mensaje': 'Hello'}})
     assert (await client.read_message('1','2'))['mensaje'] == 'Hello'
     client._request.assert_awaited_once_with('/controles/mensajesAdmin.php', {'accion':'ver_mensaje_recibido','id_mensaje':'1','id_para':'2'})
+
+
+def test_message_recipients_multiple_and_missing_are_not_guessed():
+    from custom_components.casvi.panel import message_summary
+    value = row()
+    value['alumnosReferidos'] = [{'id': 'a', 'nombre_completo':'Child A'}, {'id':'b','nombre_completo':'Child B'}]
+    assert len(message_summary(value, {})['children']) == 2
+    assert message_summary(row(), {'a':'Child A'})['children'] == []
+    fallback = row();fallback['idUsuAlumno'] = 'a'
+    assert message_summary(fallback, {'a':'Child A'})['children'][0]['name'] == 'Child A'
+
+
+def test_profile_respects_parent_visibility_and_omits_unneeded_fields():
+    from custom_components.casvi.panel import profile_summary
+    profile = profile_summary({'group':{'idGrupo':1,'documentos':[{'id':1,'titulo':'Horario'}]},
+        'classmates':[{'nombre':'Example','apellido1':'Not exposed'}],
+        'documents':[{'id':2,'titulo':'Visible','visiblePadre':1},{'id':3,'titulo':'Hidden','visiblePadre':0}],
+        'tutorials':[{'motivo':'Meeting','visiblePadre':0,'resumen':'Private','planAccion':'Private'},
+                     {'motivo':'Meeting','visiblePadre':1,'resumen':'Parent summary'}]})
+    assert len(profile['documents']) == 2
+    assert profile['classmates'] == ['Example']
+    assert profile['tutorials'][0]['summary'] == ''
+    assert profile['tutorials'][1]['summary'] == 'Parent summary'
+
+
+@pytest.mark.asyncio
+async def test_paginated_messages_authorize_historical_read_without_polling():
+    from custom_components.casvi.panel import ws_messages
+    client = SimpleNamespace(list_messages=AsyncMock(return_value={'messages':[row('old')],'total':101}),
+        read_message=AsyncMock(return_value={'mensaje':'Old content'}))
+    c = SimpleNamespace(children={},data={'messages':[]},client=client,async_request_refresh=AsyncMock())
+    hass = SimpleNamespace(data={'casvi':{'account':c}}); connection=MagicMock()
+    await ws_messages.__wrapped__.__wrapped__(hass,connection,{'id':1,'entry_id':'account','start':100,'length':20})
+    client.list_messages.assert_awaited_once_with(100,20)
+    assert connection.send_result.call_args.args[1]['total'] == 101
+    await ws_message.__wrapped__.__wrapped__(hass,connection,{'id':2,'entry_id':'account','message_id':'old','recipient_id':'2'})
+    client.read_message.assert_awaited_once_with('old',2)
+
+
+@pytest.mark.asyncio
+async def test_child_and_document_reject_unselected_or_unknown_identifiers():
+    from custom_components.casvi.panel import ws_child,ws_document
+    client=SimpleNamespace(child_profile=AsyncMock(),read_document=AsyncMock())
+    c=SimpleNamespace(children={'a':'Child'},client=client,panel_profiles={'a':{'documents':[]}})
+    hass=SimpleNamespace(data={'casvi':{'account':c}});connection=MagicMock()
+    await ws_child.__wrapped__.__wrapped__(hass,connection,{'id':1,'entry_id':'account','child_id':'other'})
+    await ws_document.__wrapped__.__wrapped__(hass,connection,{'id':2,'entry_id':'account','child_id':'a','document_id':'unknown','kind':'documentoGrupo'})
+    client.child_profile.assert_not_awaited();client.read_document.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_list_messages_uses_server_pagination_and_validates_bounds():
+    from custom_components.casvi.api import CasviError
+    client=CasviClient('test','test');client._login=AsyncMock();client._check=AsyncMock()
+    client._request=AsyncMock(return_value={'success':True,'data':[row()],'total':'101'})
+    page=await client.list_messages(20,20)
+    assert page['total']==101
+    assert client._request.call_args.args[1]['start']=='20'
+    with pytest.raises(CasviError):await client.list_messages(-1,20)
+    with pytest.raises(CasviError):await client.list_messages(0,1000)
+
+
+@pytest.mark.asyncio
+async def test_pdf_download_uses_known_path_and_rejects_non_pdf():
+    from custom_components.casvi.api import CasviError
+    client=CasviClient('test','test');client._check=AsyncMock()
+    async def chunks(size):
+        yield b'not a PDF'
+    response=MagicMock(status=200);response.content.iter_chunked=chunks
+    context=MagicMock();context.__aenter__=AsyncMock(return_value=response);context.__aexit__=AsyncMock(return_value=False)
+    client._session=MagicMock();client._session.get.return_value=context
+    with pytest.raises(CasviError):await client.read_document('a',{'kind':'documentoGrupo','id':'doc','group':'group'})
+    assert client._session.get.call_args.args[0].startswith('https://intranet.casvi.es/pages/verDocumento.php?')
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('payload,valid', [(b'%PDF-1.7\nexample',True), (b'%PDF-'+b'x'*(5*1024*1024),False)])
+async def test_pdf_download_validates_magic_and_size(payload,valid):
+    from custom_components.casvi.api import CasviError
+    client=CasviClient('test','test');client._check=AsyncMock()
+    async def chunks(size):
+        yield payload
+    response=MagicMock(status=200);response.content.iter_chunked=chunks
+    context=MagicMock();context.__aenter__=AsyncMock(return_value=response);context.__aexit__=AsyncMock(return_value=False)
+    client._session=MagicMock();client._session.get.return_value=context
+    if valid:
+        assert await client.read_document('a',{'kind':'documentoAlumno','id':'doc'})==payload
+    else:
+        with pytest.raises(CasviError):await client.read_document('a',{'kind':'documentoAlumno','id':'doc'})

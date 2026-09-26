@@ -4,6 +4,7 @@ from __future__ import annotations
 import asyncio
 import json
 import re
+from urllib.parse import urlencode
 from datetime import date
 from html import unescape
 from html.parser import HTMLParser
@@ -67,6 +68,15 @@ def discover_children(html):
     return result
 
 
+class _GroupPage(HTMLParser):
+    group_id = None
+
+    def handle_starttag(self, tag, attrs):
+        values = dict(attrs)
+        if values.get("id") == "nombreGrupo" and values.get("data-id", "").isdigit():
+            self.group_id = values["data-id"]
+
+
 class CasviClient:
     def __init__(self, username, password, *, base_url=BASE_URL):
         self.username = username
@@ -80,7 +90,7 @@ class CasviClient:
             await self._session.close()
             self._session = None
 
-    async def _request(self, path, data=None, *, multipart=False, text=False):
+    async def _request(self, path, data=None, *, multipart=False, text=False, allow_list=False):
         if self._session is None:
             self._session = aiohttp.ClientSession(
                 timeout=aiohttp.ClientTimeout(total=30),
@@ -113,6 +123,8 @@ class CasviClient:
             payload = json.loads(raw)
         except ValueError as err:
             raise CasviError("Unexpected non-JSON response") from err
+        if allow_list and isinstance(payload, list):
+            return payload
         if not isinstance(payload, dict):
             raise CasviError("Unexpected response structure")
         if payload.get("status") == "caducado":
@@ -166,6 +178,86 @@ class CasviClient:
         if result.get("success") is not True and result.get("status") != "success":
             raise CasviError("Casvi rejected the read request")
         return result.get("data")
+
+    async def child_profile(self, child_id):
+        async def load():
+            parser = _GroupPage()
+            parser.feed(await self._request("/pages/infoGrupoDelAlumno.php?" + urlencode({"idAlumno": child_id}), text=True))
+            group = {}
+            classmates = []
+            if parser.group_id:
+                group = self._data(await self._request("/controles/grupos.php", {
+                    "accion": "get_detalle_info_grupo_alumno", "idAlumno": str(child_id),
+                    "idGrupo": parser.group_id,
+                }, multipart=True))
+                classmates = await self._request("/controles/grupos.php", {
+                    "accion": "mostrar_alumnos_grupo", "id": parser.group_id, "soloNombre": "1",
+                }, multipart=True, allow_list=True)
+                if isinstance(classmates, dict):
+                    classmates = classmates.get("data")
+            tutorials = self._data(await self._request("/controles/gestionTutorias.php", {
+                "accion": "getTutoriasByAlumno", "idAlumno": str(child_id),
+            }, multipart=True))
+            documents = await self._request("/controles/documentosAlumno.php", {
+                "accion": "mostrar_documentos_alumno_by_id", "id": str(child_id),
+                "incluirOtroCentro": "1",
+            }, multipart=True, allow_list=True)
+            if isinstance(documents, dict):
+                documents = self._data(documents)
+            if not isinstance(group, dict) or not all(isinstance(v, list) for v in (classmates, tutorials, documents)):
+                raise CasviError("Unexpected student response")
+            return {"group": group, "classmates": classmates, "tutorials": tutorials,
+                    "documents": documents}
+        return await self._authenticated(load)
+
+    async def read_document(self, child_id, document):
+        """Download only the known viewer endpoint, with a bounded PDF payload."""
+        params = {"tipo": document["kind"], "doc": document["id"]}
+        if document["kind"] == "documentoGrupo":
+            params.update(grupo=document["group"], idAlumno=child_id)
+        elif document["kind"] == "documentoAlumno":
+            params["Alumno"] = child_id
+        else:
+            raise CasviError("Unsupported document")
+        async def load():
+            try:
+                async with self._session.get(self.base_url + "/pages/verDocumento.php?" + urlencode(params), allow_redirects=False) as response:
+                    if response.status in (301, 302, 303, 307, 308, 401):
+                        raise SessionExpired("Session expired")
+                    if response.status >= 400:
+                        raise CasviError("Document unavailable")
+                    result = bytearray()
+                    async for chunk in response.content.iter_chunked(65536):
+                        result.extend(chunk)
+                        if len(result) > 5 * 1024 * 1024:
+                            raise CasviError("PDF exceeds 5 MB")
+            except (aiohttp.ClientError, TimeoutError) as err:
+                raise CasviError("Cannot download document") from err
+            if not result.startswith(b"%PDF-"):
+                if b'login_form' in result or b'caducado' in result:
+                    raise SessionExpired("Session expired")
+                raise CasviError("Document is not a PDF")
+            return bytes(result)
+        return await self._authenticated(load)
+
+    async def list_messages(self, start=0, length=20):
+        """Read one authenticated server-side page, without fetching bodies."""
+        if not isinstance(start, int) or start < 0 or not isinstance(length, int) or not 1 <= length <= 100:
+            raise CasviError("Invalid pagination")
+        async def load():
+            result = await self._request("/controles/mensajesAdmin.php", {
+                "accion": "listar_mensajes_recibidos", "start": str(start),
+                "length": str(length), "search": "", "noLeidos": "0",
+            })
+            rows = self._data(result)
+            if not isinstance(rows, list):
+                raise CasviError("Invalid messages list")
+            try:
+                total = int(result["total"])
+            except (KeyError, ValueError, TypeError) as err:
+                raise CasviError("Invalid messages total") from err
+            return {"messages": rows, "total": total}
+        return await self._authenticated(load)
 
     async def read_message(self, message_id, recipient_id):
         """Fetch a body only after an explicit user action, never while polling."""
