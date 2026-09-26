@@ -1,0 +1,48 @@
+{
+  "title": "Casvi",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Conectar con Casvi",
+        "description": "Introduce el usuario y contraseña de la intranet. Se guardarán en la configuración local de Home Assistant.",
+        "data": {
+          "username": "Usuario",
+          "password": "Contraseña"
+        }
+      },
+      "children": {
+        "title": "Seleccionar hijos",
+        "data": {
+          "children": "Hijos"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Renovar acceso a Casvi",
+        "data": {
+          "password": "Contraseña"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Casvi ha rechazado las credenciales.",
+      "cannot_connect": "No se pudo conectar o la respuesta no es compatible.",
+      "select_children": "Selecciona al menos un hijo."
+    },
+    "abort": {
+      "already_configured": "Esta cuenta ya está configurada.",
+      "no_children": "No se encontraron agendas de hijos para esta cuenta.",
+      "reauth_successful": "Acceso actualizado."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Actualización",
+        "data": {
+          "interval": "Intervalo (minutos)",
+          "message_limit": "Mensajes recientes a consultar"
+        }
+      }
+    }
+  }
+}

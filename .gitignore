@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+.env*
+work/
+private/
+*.har
+*.apk
+*.xapk
+*credentials*
+.DS_Store
