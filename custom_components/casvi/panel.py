@@ -3,15 +3,19 @@ import asyncio
 import base64
 import hashlib
 from collections import OrderedDict
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 import voluptuous as vol
 from homeassistant.components import frontend, panel_custom, websocket_api
 from homeassistant.components.http import StaticPathConfig
-from homeassistant.core import callback
 from .api import CasviError, plain_text
 from .calendar import calendar_events
+
+
+def message_excerpt(value):
+    text = " ".join(plain_text(value).split())
+    return text if len(text) <= 180 else text[:177].rstrip() + "…"
 
 
 def message_summary(row, children):
@@ -33,7 +37,14 @@ def message_summary(row, children):
     return {"id": str(row["id"]), "id_para": str(row["idPara"]),
             "subject": plain_text(row.get("asunto")), "sender": plain_text(row.get("remitente")),
             "date": str(row.get("fechaEnvio", "")), "read": str(row.get("leido")) == "1",
-            "children": recipients}
+            "children": recipients, "excerpt": message_excerpt(row.get("mensaje"))}
+
+
+def panel_message_summary(coordinator, row):
+    result = message_summary(row, coordinator.children)
+    key = (str(row["id"]), str(row["idPara"]))
+    result["excerpt"] = result["excerpt"] or getattr(coordinator, "panel_excerpts", {}).get(key, "")
+    return result
 
 
 def remember_messages(coordinator, rows):
@@ -102,9 +113,13 @@ def summary(coordinator):
         "name": ", ".join(coordinator.children.values()) or "Casvi",
         "available": coordinator.last_update_success,
         "children": [{"id": ident, "name": name} for ident, name in coordinator.children.items()],
-        "messages": [message_summary(r, coordinator.children) for r in data["messages"]],
+        "messages": [panel_message_summary(coordinator, r) for r in data["messages"]],
         "total_messages": data["total"],
         "menu": next((plain_text(r.get("menu")) for r in data["menus"] if r.get("fecha") == today), ""),
+        "menus": [{"date": (datetime.fromisoformat(today).date() + timedelta(days=offset)).isoformat(),
+                   "menu": next((plain_text(r.get("menu")) for r in data["menus"]
+                                 if r.get("fecha") == (datetime.fromisoformat(today).date() + timedelta(days=offset)).isoformat()), "")}
+                  for offset in (-1, 0, 1)],
         "date": today,
         "events": [{"child": name, "child_id": child, "title": e.summary, "start": e.start.isoformat(), "description": e.description}
                    for child, name in coordinator.children.items()
@@ -133,16 +148,18 @@ async def async_setup_panel(hass):
             await panel_custom.async_register_panel(
                 hass, frontend_url_path="colegio", webcomponent_name="casvi-school-panel",
                 sidebar_title="Colegio", sidebar_icon="mdi:school-outline",
-                module_url="/casvi-panel.js?v=0.3.1", require_admin=True,
+                module_url="/casvi-panel.js?v=0.4.0", require_admin=True,
             )
             state["visible"] = True
 
 
-@websocket_api.websocket_command({vol.Required("type"): "casvi/overview"})
+@websocket_api.websocket_command({vol.Required("type"): "casvi/overview", vol.Optional("refresh", default=False): bool})
 @websocket_api.require_admin
-@callback
-def ws_overview(hass, connection, msg):
+@websocket_api.async_response
+async def ws_overview(hass, connection, msg):
     entries = hass.data.get("casvi", {})
+    if msg.get("refresh", False):
+        await asyncio.gather(*(c.async_request_refresh() for c in entries.values()))
     connection.send_result(msg["id"], [summary(c) for c in entries.values() if c.data])
 
 
@@ -170,7 +187,15 @@ async def ws_message(hass, connection, msg):
     except CasviError:
         connection.send_error(msg["id"], "cannot_connect", "No se pudo abrir el mensaje. Inténtalo de nuevo.")
         return
+    if not hasattr(coordinator, "panel_excerpts"):
+        coordinator.panel_excerpts = OrderedDict()
+    key = (str(row["id"]), str(row["idPara"]))
+    coordinator.panel_excerpts[key] = message_excerpt(detail.get("mensaje"))
+    coordinator.panel_excerpts.move_to_end(key)
+    while len(coordinator.panel_excerpts) > 1000:
+        coordinator.panel_excerpts.popitem(last=False)
     connection.send_result(msg["id"], {
+        "excerpt": coordinator.panel_excerpts[key],
         "subject": plain_text(row.get("asunto")), "sender": plain_text(row.get("remitente")),
         "children": message_summary(row, coordinator.children)["children"],
         "content": plain_text(detail.get("mensaje")),
@@ -199,7 +224,7 @@ async def ws_messages(hass, connection, msg):
         return
     remember_messages(coordinator, page["messages"])
     connection.send_result(msg["id"], {
-        "messages": [message_summary(r, coordinator.children) for r in page["messages"]],
+        "messages": [panel_message_summary(coordinator, r) for r in page["messages"]],
         "total": page["total"], "start": msg.get("start", 0),
     })
 
@@ -220,6 +245,9 @@ async def ws_child(hass, connection, msg):
     if not hasattr(coordinator, "panel_profiles"):
         coordinator.panel_profiles = {}
     coordinator.panel_profiles[msg["child_id"]] = result
+    schedule = (coordinator.data or {}).get('schedules', {}).get(msg['child_id'])
+    if schedule:
+        result['schedule'] = {'rows': schedule['rows']}
     connection.send_result(msg["id"], public_profile(result))
 
 

@@ -82,7 +82,7 @@ async def test_unread_message_body_not_fetched():
         {'success': True, 'total': '100', 'data': [{'id': '1', 'idPara': 2, 'leido': '0'}]},
         {'error': 0, 'menus': []}, {'status': 'success', 'data': []},
     ])
-    result = await client.snapshot({'123': 'Child'}, date(2026, 9, 1))
+    result = await client.snapshot({'123': 'Child'}, date(2026, 9, 15))
     assert result['detail'] is None
     actions = [call.args[1]['accion'] for call in client._request.call_args_list]
     assert actions == ['listar_mensajes_recibidos', 'obtener_menus_mes', 'get_eventos_alumno_especifico']
@@ -98,7 +98,7 @@ async def test_read_message_body_uses_both_identifiers():
         {'success': True, 'total': '1', 'data': [{'id': '1', 'idPara': 2, 'leido': '1'}]},
         {'error': 0, 'menus': []}, {'success': True, 'data': {'mensaje': '<p>Hello</p>'}},
     ])
-    result = await client.snapshot({}, date(2026, 9, 1))
+    result = await client.snapshot({}, date(2026, 9, 15))
     assert result['detail']['mensaje'] == '<p>Hello</p>'
     assert client._request.call_args.args[1] == {'accion': 'ver_mensaje_recibido', 'id_mensaje': '1', 'id_para': '2'}
 
@@ -163,3 +163,19 @@ async def test_login_page_allowed_only_at_public_root():
     assert 'login_form' in await client._request('/', text=True)
     with pytest.raises(SessionExpired):
         await client._request('/pages/escritorio.php', text=True)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('today,adjacent', [(date(2026,1,1),(2025,12)), (date(2026,12,31),(2027,1))])
+async def test_menu_includes_adjacent_month_at_year_boundary(today, adjacent):
+    client = CasviClient('family', 'secret')
+    client._login = AsyncMock()
+    client._check = AsyncMock()
+    client._request = AsyncMock(side_effect=[
+        {'success': True, 'total': '0', 'data': []},
+        {'error': 0, 'menus': [{'fecha': today.isoformat(), 'menu': 'Today'}]},
+        {'error': 0, 'menus': [{'fecha': 'adjacent', 'menu': 'Other month'}]},
+    ])
+    result = await client.snapshot({}, today)
+    assert len(result['menus']) == 2
+    assert client._request.call_args.args[1] == {'accion':'obtener_menus_mes','anio':str(adjacent[0]),'mes':str(adjacent[1])}

@@ -1,5 +1,17 @@
 # Cambios
 
+## 0.4.0
+
+- Inicio con menús de ayer, hoy y mañana, horarios diarios por hijo y mensajes no leídos a todo el ancho.
+- Panel sin cabecera, navegación con iconos y actualización al entrar en cada sección.
+- Fichas con tabla semanal visible, profesores por asignatura y compañeros numerados.
+- Extractos de mensajes disponibles tras su lectura, sin abrir automáticamente los pendientes.
+- Dos entidades por hijo: Piscina hoy y Educación física hoy (incluye psicomotricidad).
+- Extracción local de los PDF y almacenamiento persistente de los horarios en Home Assistant.
+- Acción casvi.refresh_schedules para forzar una nueva lectura del PDF.
+- Los horarios se comprueban diariamente y se actualizan cuando cambia el documento o el curso. EF/NAT se mantiene como desconocido; no se aplican festivos.
+- 48 pruebas Python y 3 pruebas del analizador de horarios, además de validación local de ambos PDF reales.
+
 ## 0.3.1
 
 - Sección Profesores en cada ficha de alumno, con fotos y asignaturas agrupadas por docente.

@@ -7,6 +7,12 @@ from homeassistant.helpers.storage import Store
 
 
 async def async_setup_entry(hass, entry):
+    if not hass.services.has_service('casvi', 'refresh_schedules'):
+        async def refresh_schedules(call):
+            for current in hass.data.get('casvi', {}).values():
+                await current.schedules.refresh(current.children)
+                await current.async_request_refresh()
+        hass.services.async_register('casvi', 'refresh_schedules', refresh_schedules)
     client = CasviClient(entry.data["username"], entry.data["password"])
     coordinator = CasviCoordinator(hass, entry, client)
     try:
@@ -39,3 +45,5 @@ async def async_unload_entry(hass, entry):
 
 async def async_remove_entry(hass, entry):
     await Store(hass, 1, f"casvi.messages.{entry.entry_id}").async_remove()
+
+    await Store(hass, 1, f"casvi.schedules.{entry.entry_id}").async_remove()

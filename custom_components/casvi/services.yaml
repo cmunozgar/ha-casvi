@@ -1,0 +1,3 @@
+refresh_schedules:
+  name: Actualizar horarios
+  description: Vuelve a descargar y analizar los PDF de horarios de las cuentas Casvi configuradas.

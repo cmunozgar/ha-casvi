@@ -7,7 +7,7 @@ import binascii
 import json
 import re
 from urllib.parse import urlencode
-from datetime import date
+from datetime import date, timedelta
 from html import unescape
 from html.parser import HTMLParser
 
@@ -350,6 +350,16 @@ class CasviClient:
             }, multipart=True)
             if str(menu.get("error")) != "0" or not isinstance(menu.get("menus"), list):
                 raise CasviError("Invalid menu response")
+            # Include adjacent months when yesterday/tomorrow cross a boundary.
+            months = {(day.year, day.month) for day in
+                      (today - timedelta(days=1), today + timedelta(days=1))}
+            for year, month in sorted(months - {(today.year, today.month)}):
+                adjacent = await self._request("/controles/comedor.php", {
+                    "accion": "obtener_menus_mes", "anio": str(year), "mes": str(month),
+                }, multipart=True)
+                if str(adjacent.get("error")) != "0" or not isinstance(adjacent.get("menus"), list):
+                    raise CasviError("Invalid adjacent menu response")
+                menu["menus"].extend(adjacent["menus"])
             agenda = {}
             for child in children:
                 response = await self._request("/controles/agendaEvento.php", {

@@ -286,3 +286,24 @@ async def test_teachers_failure_does_not_hide_rest_of_child_profile():
     profile=await client.child_profile('a')
     assert profile['teachers_available'] is False
     assert profile['classmates']==[{'nombre':'Classmate'}]
+
+
+@pytest.mark.asyncio
+async def test_overview_refreshes_before_returning_data_only_when_requested():
+    coordinator = SimpleNamespace(data=None, async_request_refresh=AsyncMock())
+    hass = SimpleNamespace(data={'casvi': {'account': coordinator}})
+    connection = MagicMock()
+    handler = ws_overview.__wrapped__.__wrapped__
+    await handler(hass, connection, {'id': 1})
+    coordinator.async_request_refresh.assert_not_awaited()
+    await handler(hass, connection, {'id': 2, 'refresh': True})
+    coordinator.async_request_refresh.assert_awaited_once()
+    connection.send_result.assert_called_with(2, [])
+
+
+def test_message_excerpt_is_plain_bounded_and_optional():
+    from custom_components.casvi.panel import message_excerpt, message_summary
+    assert message_excerpt('<p>Hola &amp; adiós</p><script>secret()</script>') == 'Hola & adiós'
+    assert message_excerpt('a' * 200) == 'a' * 177 + '…'
+    assert message_summary(row(), {})['excerpt'] == ''
+    assert message_summary({**row(), 'mensaje': '<b>Vista previa</b>'}, {})['excerpt'] == 'Vista previa'

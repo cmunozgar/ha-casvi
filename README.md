@@ -106,3 +106,10 @@ Validación realizada: 36 pruebas aprobadas con Home Assistant 2025.1.4 y Python
 Abre una incidencia con las versiones de Home Assistant y Casvi, los pasos y el error sin datos personales. No adjuntes contraseñas, cookies, archivos HAR, mensajes del colegio ni nombres o identificadores de menores. Consulta [CONTRIBUTING.md](CONTRIBUTING.md).
 
 Código bajo licencia MIT. Se utiliza el logotipo de la intranet para identificar el servicio; no implica vinculación oficial. Las marcas y los recursos de terceros tienen sus propias condiciones, descritas en [NOTICE.md](NOTICE.md).
+
+
+### Horario del PDF (vista experimental)
+
+La ficha del alumno interpreta tablas de horario con texto y columnas de lunes a viernes. Muestra las clases por día, una tabla semanal e indicadores de natación, educación física y psicomotricidad. La lectura se realiza en el navegador con PDF.js, sin enviar el documento a servicios externos ni usar OCR. El PDF original sigue disponible.
+
+Se han comprobado los formatos de Infantil y Primaria de Casvi. Los documentos escaneados y otros diseños pueden no reconocerse; en ese caso se muestra un aviso para consultar el original. `EF/NAT` se conserva como actividad ambigua, sin confirmar piscina ni educación física por separado. Se trata del horario semanal habitual: no aplica el calendario de festivos, vacaciones o cambios puntuales. La integración crea además dos entidades `binary_sensor` por alumno: Piscina hoy y Educación física hoy. Educación física incluye psicomotricidad. Un horario ausente o ilegible deja las entidades no disponibles; EF/NAT deja el estado desconocido salvo que otra franja confirme la actividad. Los fines de semana quedan desactivadas. Se basan en el horario habitual, sin excluir festivos. El horario extraído se guarda en `.storage/casvi.schedules.<entry_id>` y se reutiliza tras los reinicios. Cada día se comprueba si cambió el documento o el curso escolar. La acción `casvi.refresh_schedules` fuerza una nueva descarga, útil si el colegio reemplaza un PDF sin cambiar su identificador. El panel y las entidades reutilizan la tabla almacenada.

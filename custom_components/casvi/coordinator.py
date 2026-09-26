@@ -7,6 +7,7 @@ from homeassistant.exceptions import ConfigEntryAuthFailed, HomeAssistantError
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .notifications import MessageNotifications
+from .schedule import ScheduleReader
 
 from .api import CasviAuthError, CasviError
 from .const import DOMAIN, DEFAULT_INTERVAL
@@ -21,6 +22,7 @@ class CasviCoordinator(DataUpdateCoordinator):
         self.entry = entry
         self.children = entry.data["children"]
         self.notifications = MessageNotifications(hass, entry)
+        self.schedules = ScheduleReader(hass, client, entry.entry_id)
 
     async def _async_update_data(self):
         try:
@@ -28,6 +30,17 @@ class CasviCoordinator(DataUpdateCoordinator):
                 self.children, datetime.now(ZoneInfo("Europe/Madrid")).date(),
                 self.entry.options.get("message_limit", 50),
             )
+            data['schedules'] = {}
+            today = datetime.now(ZoneInfo("Europe/Madrid")).date()
+            for child in self.children:
+                try:
+                    data['schedules'][child] = await self.schedules.read(child, today)
+                except CasviAuthError:
+                    raise
+                except Exception:
+                    # One unreadable PDF must not disable messages or another child.
+                    data['schedules'][child] = None
+                    logging.getLogger(__name__).debug("School activity schedule unavailable")
             try:
                 await self.notifications.process(data["messages"])
             except (OSError, HomeAssistantError):
