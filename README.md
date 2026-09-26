@@ -1,4 +1,4 @@
-# Casvi para Home Assistant — 0.1.1
+# Casvi para Home Assistant — 0.2.0
 
 Integración personalizada para Home Assistant Container. Conecta directamente con la intranet, sin otro contenedor ni broker MQTT. Primera versión para una cuenta familiar y el centro predeterminado de esa sesión.
 
@@ -28,6 +28,24 @@ Si ya instalaste la versión manual con dominio `casvi`, haz una copia de seguri
 
 No copies el APK, los informes de ingeniería inversa ni el directorio de trabajo. No necesitas editar `configuration.yaml`. No requiere Supervisor ni una instalación HACS. También se puede instalar desde HACS como repositorio personalizado.
 
+## Panel Colegio y avisos al móvil
+
+Después de actualizar y reiniciar, aparece **Colegio** en el menú lateral. Reúne el menú de hoy, próximos eventos por hijo y la bandeja reciente con un filtro de pendientes. Si hay varias cuentas, permite elegir la familia. El panel y su lectura de mensajes requieren un usuario administrador de Home Assistant. Las entidades existentes conservan los permisos habituales de Home Assistant.
+
+Pulsa un mensaje para leer su texto. No se ejecuta `marcar_leido`, pero no se ha confirmado que el servidor nunca cambie el estado al consultar un pendiente. La actualización automática solo lista los mensajes y no abre los pendientes. Los adjuntos se muestran por nombre: para descargarlos usa el enlace a la intranet e inicia sesión allí. Las imágenes y el formato HTML del mensaje se convierten en texto.
+
+Para activar avisos:
+
+1. Instala y conecta la app **Home Assistant Companion** en el móvil y permite sus notificaciones.
+2. En **Ajustes → Dispositivos y servicios → Casvi → Configurar**, selecciona uno o varios móviles en **Móviles para recibir avisos**.
+3. Guarda. Los mensajes nuevos detectados en los siguientes ciclos generan un aviso; tocarlo abre el mensaje en Colegio. Para hacerlo fuera de casa, la app necesita acceso remoto a tu Home Assistant.
+
+El aviso dice «Tienes un nuevo mensaje» y no incluye el asunto, remitente ni contenido en la pantalla bloqueada. La primera consulta establece una referencia y no notifica todo el buzón. Los identificadores ya detectados se conservan entre reinicios; los envíos fallidos se reintentan hasta tres veces. Un cierre justo después de enviar y antes de guardar puede repetir el aviso, con la misma etiqueta para reemplazarlo cuando lo permita el móvil.
+
+Los avisos se comprueban cada 15 minutos por defecto (configurable). Solo abarcan la ventana de mensajes recientes; si entran más mensajes que el límite entre consultas, algunos pueden quedar fuera. Aumentar el límite no notifica el historial anterior a la primera consulta. Un enlace a un mensaje que salió de esa ventana ofrece abrir la intranet.
+
+**Actualizar panel** vuelve a leer los datos disponibles en Home Assistant; no fuerza una nueva consulta al colegio. El panel refresca esa vista cada 30 segundos. El historial de identificadores de avisos se elimina al borrar la cuenta de la integración.
+
 ## Entidades
 
 - Calendario de agenda por hijo, con los eventos que devuelve la intranet.
@@ -38,7 +56,7 @@ No copies el APK, los informes de ingeniería inversa ni el directorio de trabaj
 
 La actualización predeterminada es cada 15 minutos. En **Configurar** puedes elegir entre 5 y 120 minutos y entre 10 y 100 mensajes recientes. El menú mensual se consulta en cada ciclo. Esta versión no importa todos los mensajes históricos ni descarga archivos adjuntos.
 
-No envía, borra, acepta ni marca explícitamente mensajes; tampoco modifica agenda o incidencias. No hay un listado separado de comunicados en esta versión: solo aparecen los registros que la bandeja recibida devuelva.
+No envía mensajes al colegio, borra, acepta ni marca explícitamente mensajes; tampoco modifica agenda o incidencias. No hay un listado separado de comunicados en esta versión: solo aparecen los registros que la bandeja recibida devuelva.
 
 ## Login y renovación
 
@@ -69,7 +87,7 @@ No ejecutar pruebas con credenciales reales. La validación de acceso real se re
 
 Referencias de implementación: [configuración de integraciones](https://developers.home-assistant.io/docs/core/integration/config_flow/), [actualizaciones coordinadas](https://developers.home-assistant.io/docs/integration_fetching_data/) y [calendarios](https://developers.home-assistant.io/docs/core/entity/calendar/).
 
-Validación realizada: 15 pruebas aprobadas con Home Assistant 2025.1.4 y Python 3.13.1, más acceso real y recuperación tras pérdida de cookie. La instalación y el funcionamiento en otras familias todavía requieren validación. No se garantiza el funcionamiento de cuentas o centros todavía no probados.
+Validación realizada: 23 pruebas aprobadas con Home Assistant 2025.1.4 y Python 3.13.1, más acceso real y recuperación tras pérdida de cookie. El panel se ha probado en navegador con datos inventados. El envío real a un móvil y la instalación en otras familias todavía requieren validación. No se garantiza el funcionamiento de cuentas o centros todavía no probados.
 
 ## Soporte y contribuciones
 

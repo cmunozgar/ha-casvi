@@ -88,7 +88,14 @@ class CasviOptionsFlow(config_entries.OptionsFlow):
     async def async_step_init(self, user_input=None):
         if user_input is not None:
             return self.async_create_entry(title="", data=user_input)
+        targets = sorted(set(self.config_entry.options.get("notify_targets", [])) | {
+            name for name in self.hass.services.async_services().get("notify", {})
+            if name.startswith("mobile_app_")
+        })
         return self.async_show_form(step_id="init", data_schema=vol.Schema({
+            vol.Required("notify_targets", default=self.config_entry.options.get("notify_targets", [])): selector.SelectSelector(
+                selector.SelectSelectorConfig(multiple=True, options=targets)
+            ),
             vol.Required("interval", default=self.config_entry.options.get("interval", DEFAULT_INTERVAL)): vol.All(vol.Coerce(int), vol.Range(min=5, max=120)),
             vol.Required("message_limit", default=self.config_entry.options.get("message_limit", 50)): vol.All(vol.Coerce(int), vol.Range(min=10, max=100)),
         }))

@@ -167,6 +167,18 @@ class CasviClient:
             raise CasviError("Casvi rejected the read request")
         return result.get("data")
 
+    async def read_message(self, message_id, recipient_id):
+        """Fetch a body only after an explicit user action, never while polling."""
+        async def load():
+            detail = self._data(await self._request("/controles/mensajesAdmin.php", {
+                "accion": "ver_mensaje_recibido", "id_mensaje": str(message_id),
+                "id_para": str(recipient_id),
+            }))
+            if not isinstance(detail, dict):
+                raise CasviError("Invalid message detail")
+            return detail
+        return await self._authenticated(load)
+
     async def snapshot(self, children, today: date, message_limit=50):
         async def load():
             received = await self._request("/controles/mensajesAdmin.php", {
