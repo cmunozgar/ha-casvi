@@ -209,3 +209,80 @@ async def test_pdf_download_validates_magic_and_size(payload,valid):
         assert await client.read_document('a',{'kind':'documentoAlumno','id':'doc'})==payload
     else:
         with pytest.raises(CasviError):await client.read_document('a',{'kind':'documentoAlumno','id':'doc'})
+
+
+def test_teachers_group_subjects_and_keep_photo_sources_server_side():
+    from custom_components.casvi.panel import teachers_summary,public_profile
+    teachers=teachers_summary([
+        {'idProfesor':7,'profesor':'Example teacher','asignatura':'Math','foto':'https://example.invalid/photo'},
+        {'idProfesor':7,'profesor':'Example teacher','asignatura':'Science'},
+        {'idProfesor':7,'profesor':'Example teacher','asignatura':'Math'},
+        {'profesor':'Other teacher','asignatura':'Music'},
+    ])
+    assert len(teachers)==2
+    assert teachers[0]['subjects']==['Math','Science']
+    public=public_profile({'teachers':teachers})
+    assert set(public['teachers'][0])=={'id','name','subjects'}
+    assert 'example.invalid' not in str(public)
+
+
+@pytest.mark.asyncio
+async def test_teacher_photo_requires_configured_child_and_known_teacher():
+    from custom_components.casvi.panel import ws_teacher_photo
+    connection=MagicMock();connection.user.is_admin=False
+    with pytest.raises(Unauthorized):ws_teacher_photo(MagicMock(),connection,{'id':1})
+    client=SimpleNamespace(read_teacher_photo=AsyncMock())
+    c=SimpleNamespace(children={'a':'Child'},client=client,panel_profiles={'a':{'teachers':[{'id':'7'}]}})
+    hass=SimpleNamespace(data={'casvi':{'account':c}})
+    handler=ws_teacher_photo.__wrapped__.__wrapped__
+    await handler(hass,connection,{'id':1,'entry_id':'account','child_id':'other','teacher_id':'7'})
+    await handler(hass,connection,{'id':2,'entry_id':'account','child_id':'a','teacher_id':'unknown'})
+    client.read_teacher_photo.assert_not_awaited()
+    client.read_teacher_photo.return_value='data:image/png;base64,example'
+    await handler(hass,connection,{'id':3,'entry_id':'account','child_id':'a','teacher_id':'7'})
+    client.read_teacher_photo.assert_awaited_once_with({'id':'7'})
+
+
+@pytest.mark.asyncio
+async def test_photo_base64_is_sniffed_and_svg_or_external_sources_not_executed():
+    import base64
+    from custom_components.casvi.api import CasviError
+    client=CasviClient('test','test');client._authenticated=AsyncMock()
+    data=b'\x89PNG\r\n\x1a\nsynthetic'
+    result=await client.read_teacher_photo({'_photo_source':base64.b64encode(data).decode(),'_source_id':''})
+    assert result.startswith('data:image/png;base64,')
+    with pytest.raises(CasviError):
+        await client.read_teacher_photo({'_photo_source':'data:image/svg+xml;base64,'+base64.b64encode(b'<svg/>').decode(),'_source_id':''})
+    with pytest.raises(CasviError):
+        await client.read_teacher_photo({'_photo_source':'https://example.invalid/private','_source_id':''})
+    client._authenticated.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_photo_uses_fixed_authenticated_endpoint_and_checks_size():
+    from custom_components.casvi.api import CasviError
+    client=CasviClient('test','test');client._check=AsyncMock()
+    async def chunks(size):yield b'\xff\xd8\xffsynthetic'
+    response=MagicMock(status=200);response.content.iter_chunked=chunks
+    context=MagicMock();context.__aenter__=AsyncMock(return_value=response);context.__aexit__=AsyncMock(return_value=False)
+    client._session=MagicMock();client._session.get.return_value=context
+    photo=await client.read_teacher_photo({'_source_id':'7','_photo_source':'https://example.invalid/photo'})
+    assert photo.startswith('data:image/jpeg;base64,')
+    assert client._session.get.call_args.args[0]=='https://intranet.casvi.es/pages/verFotos.php?tipo=usuario&id=7'
+    assert client._session.get.call_args.kwargs['allow_redirects'] is False
+    with pytest.raises(CasviError):client._photo_payload(b'\xff\xd8\xff'+b'x'*(2*1024*1024))
+
+
+@pytest.mark.asyncio
+async def test_teachers_failure_does_not_hide_rest_of_child_profile():
+    from custom_components.casvi.api import CasviError
+    client=CasviClient('test','test');client._login=AsyncMock();client._check=AsyncMock()
+    client._request=AsyncMock(side_effect=[
+        '<span id="nombreGrupo" data-id="4"></span>',
+        {'status':'success','data':{'idGrupo':4,'etiquetaGrupo':'Example'}},
+        [{'nombre':'Classmate'}],CasviError('Unavailable'),
+        {'success':True,'data':[]},{'status':'success','data':[]},
+    ])
+    profile=await client.child_profile('a')
+    assert profile['teachers_available'] is False
+    assert profile['classmates']==[{'nombre':'Classmate'}]

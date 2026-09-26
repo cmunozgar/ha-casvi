@@ -1,4 +1,4 @@
-# Casvi para Home Assistant — 0.3.0
+# Casvi para Home Assistant — 0.3.1
 
 Integración personalizada para Home Assistant Container. Conecta directamente con la intranet, sin otro contenedor ni broker MQTT. Cada entrada utiliza una cuenta familiar y el centro predeterminado de esa sesión.
 
@@ -48,7 +48,11 @@ Los avisos se comprueban cada 15 minutos por defecto (configurable). Solo abarca
 
 ## Pestaña de cada hijo
 
-Cada hijo seleccionado tiene una pestaña con su grupo, tutor, tutorías registradas, compañeros y mensajes recientes asociados. La ficha se consulta al abrirla; **Actualizar panel** vuelve a cargarla. Los compañeros se muestran solo con los nombres que la intranet entrega en la vista de familias. Los detalles de tutorías y documentos respetan la visibilidad para padres; no se muestran campos internos ni fotos. Se utiliza el grupo que la intranet selecciona inicialmente para ese hijo.
+La sección **Profesores** muestra una tarjeta por docente con su nombre, asignaturas y fotografía. Las asignaturas de un mismo profesor se agrupan. Se consultan los docentes del grupo que Casvi selecciona para el alumno; las fotos se cargan al abrir la ficha, a través de Home Assistant, sin exigir sesión de Casvi en el navegador. Cuando no hay foto disponible se indica «Sin foto». Si falla la consulta de profesores, el resto de la ficha continúa disponible y se puede reintentar con **Actualizar panel**.
+
+Las fotos no se guardan en archivos ni en el historial de entidades. Se admiten JPEG, PNG, GIF y WebP de hasta 2 MB. No se siguen enlaces arbitrarios de imágenes ni redirecciones externas.
+
+Cada hijo seleccionado tiene una pestaña con su grupo, tutor, tutorías registradas, compañeros y mensajes recientes asociados. La ficha se consulta al abrirla; **Actualizar panel** vuelve a cargarla. Los compañeros se muestran solo con los nombres que la intranet entrega en la vista de familias. Los detalles de tutorías y documentos respetan la visibilidad para padres; no se muestran campos internos ni fotos de compañeros. Se utiliza el grupo que la intranet selecciona inicialmente para ese hijo.
 
 **Horario y documentos** muestra los documentos del grupo y los documentos del alumno visibles para padres. Los títulos que contienen «horario» aparecen primero. Al pulsar un PDF se descarga a través de la sesión de Casvi de Home Assistant y se muestra dentro del panel, sin enviar el archivo a un visor externo ni exigir otro login en el navegador. El visor PDF.js está incluido en la integración.
 
@@ -95,7 +99,7 @@ No ejecutar pruebas con credenciales reales. La validación de acceso real se re
 
 Referencias de implementación: [configuración de integraciones](https://developers.home-assistant.io/docs/core/integration/config_flow/), [actualizaciones coordinadas](https://developers.home-assistant.io/docs/integration_fetching_data/) y [calendarios](https://developers.home-assistant.io/docs/core/entity/calendar/).
 
-Validación realizada: 31 pruebas aprobadas con Home Assistant 2025.1.4 y Python 3.13.1, más acceso real y recuperación tras pérdida de cookie. El panel, la paginación y el visor PDF se han probado en navegador con datos inventados. Las consultas de ambas fichas y sus horarios PDF se han validado con una cuenta real, sin incluir datos personales en el repositorio. El envío real a un móvil y la instalación en otras familias todavía requieren validación. No se garantiza el funcionamiento de cuentas o centros todavía no probados.
+Validación realizada: 36 pruebas aprobadas con Home Assistant 2025.1.4 y Python 3.13.1, más acceso real y recuperación tras pérdida de cookie. El panel, la paginación y el visor PDF se han probado en navegador con datos inventados. Las consultas de ambas fichas, sus horarios PDF y las fotos de profesores se han validado con una cuenta real, sin incluir datos personales en el repositorio. El envío real a un móvil y la instalación en otras familias todavía requieren validación. No se garantiza el funcionamiento de cuentas o centros todavía no probados.
 
 ## Soporte y contribuciones
 

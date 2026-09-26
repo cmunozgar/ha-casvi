@@ -1,6 +1,7 @@
 """Authenticated, administrator-only school panel with on-demand reading."""
 import asyncio
 import base64
+import hashlib
 from collections import OrderedDict
 from datetime import datetime
 from pathlib import Path
@@ -47,6 +48,30 @@ def remember_messages(coordinator, rows):
         cache.popitem(last=False)
 
 
+def teachers_summary(rows):
+    teachers = {}
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        name = plain_text(row.get("profesor"))
+        source_id = str(row.get("idProfesor") or "")
+        subject = plain_text(row.get("asignatura"))
+        if not name and (not source_id.isdigit() or int(source_id) <= 0):
+            continue
+        ident = source_id if source_id.isdigit() and int(source_id) > 0 else "name-" + hashlib.sha256(name.casefold().encode()).hexdigest()[:24]
+        teacher = teachers.setdefault(ident, {"id": ident, "name": name or "Profesor sin nombre", "subjects": [],
+                                              "_source_id": source_id, "_photo_source": None})
+        if subject and subject not in teacher["subjects"]:
+            teacher["subjects"].append(subject)
+        if not teacher["_photo_source"] and isinstance(row.get("foto"), str):
+            teacher["_photo_source"] = row["foto"]
+    return list(teachers.values())
+
+
+def public_profile(profile):
+    return {**profile, "teachers": [{k: v for k, v in t.items() if not k.startswith("_")} for t in profile["teachers"]]}
+
+
 def profile_summary(raw):
     group = raw["group"]
     documents = [{"id": str(d["id"]), "title": plain_text(d.get("titulo")),
@@ -59,6 +84,8 @@ def profile_summary(raw):
         "group": plain_text(group.get("etiquetaGrupo")), "tutor": plain_text(group.get("nombreTutor")),
         "classmates": [plain_text(r.get("nombre")) for r in raw["classmates"]],
         "documents": documents,
+        "teachers": teachers_summary(raw.get("teachers", [])),
+        "teachers_available": raw.get("teachers_available", True),
         "tutorials": [{"date": plain_text(t.get("fecha")), "reason": plain_text(t.get("motivo")),
                        "teacher": " ".join(plain_text(t.get(k)) for k in ("profesorNombre", "profesorApellido1", "profesorApellido2")).strip(),
                        "summary": plain_text(t.get("resumen")) if str(t.get("visiblePadre")) == "1" or t.get("visiblePadre") is True else "",
@@ -100,12 +127,13 @@ async def async_setup_panel(hass):
             websocket_api.async_register_command(hass, ws_messages)
             websocket_api.async_register_command(hass, ws_child)
             websocket_api.async_register_command(hass, ws_document)
+            websocket_api.async_register_command(hass, ws_teacher_photo)
             state["registered"] = True
         if not state.get("visible"):
             await panel_custom.async_register_panel(
                 hass, frontend_url_path="colegio", webcomponent_name="casvi-school-panel",
                 sidebar_title="Colegio", sidebar_icon="mdi:school-outline",
-                module_url="/casvi-panel.js?v=0.3.0", require_admin=True,
+                module_url="/casvi-panel.js?v=0.3.1", require_admin=True,
             )
             state["visible"] = True
 
@@ -192,7 +220,7 @@ async def ws_child(hass, connection, msg):
     if not hasattr(coordinator, "panel_profiles"):
         coordinator.panel_profiles = {}
     coordinator.panel_profiles[msg["child_id"]] = result
-    connection.send_result(msg["id"], result)
+    connection.send_result(msg["id"], public_profile(result))
 
 
 @websocket_api.websocket_command({
@@ -218,6 +246,30 @@ async def ws_document(hass, connection, msg):
         connection.send_error(msg["id"], "cannot_connect", "No se pudo abrir el PDF. Debe ser un PDF de hasta 5 MB.")
         return
     connection.send_result(msg["id"], {"title": document["title"], "pdf": base64.b64encode(pdf).decode("ascii")})
+
+
+@websocket_api.websocket_command({
+    vol.Required("type"): "casvi/teacher_photo", vol.Required("entry_id"): str,
+    vol.Required("child_id"): str, vol.Required("teacher_id"): str,
+})
+@websocket_api.require_admin
+@websocket_api.async_response
+async def ws_teacher_photo(hass, connection, msg):
+    coordinator = hass.data.get("casvi", {}).get(msg["entry_id"])
+    if coordinator is None or msg["child_id"] not in coordinator.children:
+        connection.send_error(msg["id"], "not_found", "Alumno no configurado.")
+        return
+    profile = getattr(coordinator, "panel_profiles", {}).get(msg["child_id"], {})
+    teacher = next((t for t in profile.get("teachers", []) if t["id"] == msg["teacher_id"]), None)
+    if teacher is None:
+        connection.send_error(msg["id"], "not_found", "Profesor no disponible para esta ficha.")
+        return
+    try:
+        photo = await coordinator.client.read_teacher_photo(teacher)
+    except CasviError:
+        connection.send_error(msg["id"], "unavailable", "Foto no disponible.")
+        return
+    connection.send_result(msg["id"], {"photo": photo})
 
 
 def async_remove_panel(hass):

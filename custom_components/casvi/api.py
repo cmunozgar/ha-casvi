@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import asyncio
+import base64
+import binascii
 import json
 import re
 from urllib.parse import urlencode
@@ -185,6 +187,8 @@ class CasviClient:
             parser.feed(await self._request("/pages/infoGrupoDelAlumno.php?" + urlencode({"idAlumno": child_id}), text=True))
             group = {}
             classmates = []
+            teachers = []
+            teachers_available = True
             if parser.group_id:
                 group = self._data(await self._request("/controles/grupos.php", {
                     "accion": "get_detalle_info_grupo_alumno", "idAlumno": str(child_id),
@@ -195,6 +199,18 @@ class CasviClient:
                 }, multipart=True, allow_list=True)
                 if isinstance(classmates, dict):
                     classmates = classmates.get("data")
+                try:
+                    response = await self._request("/controles/asignaturas.php", {
+                        "accion": "mostrar_asignaturas_y_profesores_grupo", "id": parser.group_id,
+                    }, multipart=True)
+                    teachers = response.get("data")
+                    if not isinstance(teachers, list) or response.get("success") is False or response.get("status") == "error":
+                        raise CasviError("Invalid teachers list")
+                except SessionExpired:
+                    raise
+                except CasviError:
+                    teachers = []
+                    teachers_available = False
             tutorials = self._data(await self._request("/controles/gestionTutorias.php", {
                 "accion": "getTutoriasByAlumno", "idAlumno": str(child_id),
             }, multipart=True))
@@ -207,7 +223,56 @@ class CasviClient:
             if not isinstance(group, dict) or not all(isinstance(v, list) for v in (classmates, tutorials, documents)):
                 raise CasviError("Unexpected student response")
             return {"group": group, "classmates": classmates, "tutorials": tutorials,
-                    "documents": documents}
+                    "documents": documents, "teachers": teachers, "teachers_available": teachers_available}
+        return await self._authenticated(load)
+
+    @staticmethod
+    def _photo_payload(data):
+        if len(data) > 2 * 1024 * 1024:
+            raise CasviError("Photo exceeds 2 MB")
+        if data.startswith(b"\xff\xd8\xff"):
+            mime = "image/jpeg"
+        elif data.startswith(b"\x89PNG\r\n\x1a\n"):
+            mime = "image/png"
+        elif data[:6] in (b"GIF87a", b"GIF89a"):
+            mime = "image/gif"
+        elif data.startswith(b"RIFF") and data[8:12] == b"WEBP":
+            mime = "image/webp"
+        else:
+            raise CasviError("Photo unavailable")
+        return "data:" + mime + ";base64," + base64.b64encode(data).decode("ascii")
+
+    async def read_teacher_photo(self, teacher):
+        """Use only group-authorized photo data or the fixed Casvi photo endpoint."""
+        source = teacher.get("_photo_source")
+        if isinstance(source, str) and source and len(source) <= 3 * 1024 * 1024:
+            encoded = source.split(",", 1)[1] if source.startswith("data:image/") and ";base64," in source else source
+            if not source.startswith(("http:", "https:")):
+                try:
+                    data = base64.b64decode("".join(encoded.split()), validate=True)
+                    return self._photo_payload(data)
+                except (ValueError, binascii.Error, CasviError):
+                    pass
+        ident = teacher.get("_source_id", "")
+        if not ident.isdigit() or int(ident) <= 0:
+            raise CasviError("Photo unavailable")
+        async def load():
+            try:
+                async with self._session.get(self.base_url + "/pages/verFotos.php?" + urlencode({"tipo": "usuario", "id": ident}), allow_redirects=False) as response:
+                    if response.status in (301, 302, 303, 307, 308, 401):
+                        raise SessionExpired("Session expired")
+                    if response.status >= 400:
+                        raise CasviError("Photo unavailable")
+                    photo = bytearray()
+                    async for chunk in response.content.iter_chunked(65536):
+                        photo.extend(chunk)
+                        if len(photo) > 2 * 1024 * 1024:
+                            raise CasviError("Photo exceeds 2 MB")
+            except (aiohttp.ClientError, TimeoutError) as err:
+                raise CasviError("Cannot download photo") from err
+            if b'login_form' in photo[:4096] or b'caducado' in photo[:256]:
+                raise SessionExpired("Session expired")
+            return self._photo_payload(bytes(photo))
         return await self._authenticated(load)
 
     async def read_document(self, child_id, document):

@@ -1,5 +1,12 @@
 # Cambios
 
+## 0.3.1
+
+- Sección Profesores en cada ficha de alumno, con fotos y asignaturas agrupadas por docente.
+- Carga autenticada de imágenes y estado «Sin foto» cuando no están disponibles.
+- Un fallo al consultar profesores no impide ver el resto de la ficha.
+- 36 pruebas y validación de profesores y fotos en ambos grupos de una cuenta real.
+
 ## 0.3.0
 
 - Logotipo de Casvi para identificar el servicio.
