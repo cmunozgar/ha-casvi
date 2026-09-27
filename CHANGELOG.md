@@ -1,5 +1,14 @@
 # Cambios
 
+## 0.6.2
+
+- Compatibilidad completa del panel con los temas oscuros de Home Assistant.
+- Tarjetas, textos, bordes, navegación, acentos y estados vacíos heredan ahora la paleta del tema activo.
+- Se mantienen valores de respaldo para temas que no definan todas las variables visuales.
+- Añade una prueba de regresión para evitar que vuelvan a introducirse colores claros fijos.
+
+Después de actualizar en HACS, reinicia Home Assistant y recarga el panel.
+
 ## 0.6.1
 
 - Incluye el README actualizado con todas las funciones de 0.6.0 en la versión descargada por HACS.
