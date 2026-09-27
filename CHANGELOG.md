@@ -1,5 +1,13 @@
 # Cambios
 
+## 0.6.1
+
+- Incluye el README actualizado con todas las funciones de 0.6.0 en la versión descargada por HACS.
+- Elimina el número de versión del título del README para evitar confundirlo con la versión instalada.
+- Sin cambios de funcionamiento respecto a 0.6.0.
+
+El icono de Casvi está incluido en el paquete. Su visualización en la tienda sigue pendiente de la corrección de HACS: https://github.com/hacs/frontend/pull/937.
+
 ## 0.6.0
 
 - Nueva sección Eventos: calendario mensual de lunes a viernes en escritorio y agenda diaria en móvil.

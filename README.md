@@ -1,4 +1,4 @@
-# Casvi para Home Assistant — 0.6.0
+# Casvi para Home Assistant
 
 Integración personalizada para Home Assistant Container. Conecta directamente con la intranet, sin otro contenedor ni broker MQTT. Cada entrada utiliza una cuenta familiar y el centro predeterminado de esa sesión.
 
