@@ -2,6 +2,7 @@
 import asyncio
 import base64
 import hashlib
+from urllib.parse import urljoin, urlsplit, urlunsplit
 from collections import OrderedDict
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -9,8 +10,22 @@ from zoneinfo import ZoneInfo
 import voluptuous as vol
 from homeassistant.components import frontend, panel_custom, websocket_api
 from homeassistant.components.http import StaticPathConfig
-from .api import CasviError, plain_text
+from .api import CasviError, plain_text, message_text
 from .calendar import calendar_events
+from .message_format import message_nodes
+
+
+def attachment_links(attachments):
+    result = []
+    for attachment in attachments:
+        if not isinstance(attachment, dict):
+            continue
+        url = urlsplit(urljoin('https://intranet.casvi.es/pages/mensajes.php', str(attachment.get('ruta_descargar') or '')))
+        safe = (bool(attachment.get('ruta_descargar')) and url.scheme in ('http','https')
+                and url.netloc.lower() == 'intranet.casvi.es' and not url.username)
+        result.append({'name':plain_text(attachment.get('nombre')) or 'Adjunto',
+                       'url':urlunsplit(('https',url.netloc,url.path,url.query,url.fragment)) if safe else None})
+    return result
 
 
 def message_excerpt(value):
@@ -37,6 +52,7 @@ def message_summary(row, children):
     return {"id": str(row["id"]), "id_para": str(row["idPara"]),
             "subject": plain_text(row.get("asunto")), "sender": plain_text(row.get("remitente")),
             "date": str(row.get("fechaEnvio", "")), "read": str(row.get("leido")) == "1",
+            "attachment_count": len(row.get("adjuntos")) if isinstance(row.get("adjuntos"), list) else 0,
             "children": recipients, "excerpt": message_excerpt(row.get("mensaje"))}
 
 
@@ -112,7 +128,11 @@ def summary(coordinator):
         "entry_id": coordinator.entry.entry_id,
         "name": ", ".join(coordinator.children.values()) or "Casvi",
         "available": coordinator.last_update_success,
-        "children": [{"id": ident, "name": name} for ident, name in coordinator.children.items()],
+        "children": [{"id": ident, "name": name,
+                      "given_name": next((plain_text(child.get("nombre"))
+                          for message in data["messages"] for child in (message.get("alumnosReferidos") or [])
+                          if isinstance(child, dict) and str(child.get("id")) == ident and child.get("nombre")), "")}
+                     for ident, name in coordinator.children.items()],
         "messages": [panel_message_summary(coordinator, r) for r in data["messages"]],
         "total_messages": data["total"],
         "menu": next((plain_text(r.get("menu")) for r in data["menus"] if r.get("fecha") == today), ""),
@@ -142,6 +162,8 @@ async def async_setup_panel(hass):
             websocket_api.async_register_command(hass, ws_messages)
             websocket_api.async_register_command(hass, ws_child)
             websocket_api.async_register_command(hass, ws_document)
+            websocket_api.async_register_command(hass, ws_attachment)
+            websocket_api.async_register_command(hass, ws_menu)
             websocket_api.async_register_command(hass, ws_teacher_photo)
             state["registered"] = True
         if not state.get("visible"):
@@ -187,6 +209,14 @@ async def ws_message(hass, connection, msg):
     except CasviError:
         connection.send_error(msg["id"], "cannot_connect", "No se pudo abrir el mensaje. Inténtalo de nuevo.")
         return
+    read_confirmed = str(row.get('leido')) == '1'
+    if not read_confirmed:
+        try:
+            await coordinator.client.mark_message_read(row['id'], row['idPara'])
+            row['leido'] = '1'
+            read_confirmed = True
+        except CasviError:
+            pass
     if not hasattr(coordinator, "panel_excerpts"):
         coordinator.panel_excerpts = OrderedDict()
     key = (str(row["id"]), str(row["idPara"]))
@@ -194,12 +224,22 @@ async def ws_message(hass, connection, msg):
     coordinator.panel_excerpts.move_to_end(key)
     while len(coordinator.panel_excerpts) > 1000:
         coordinator.panel_excerpts.popitem(last=False)
+    attachments = attachment_links(detail.get("adjuntos") or row.get("adjuntos") or [])
+    if not hasattr(coordinator, "panel_attachments"):
+        coordinator.panel_attachments = OrderedDict()
+    coordinator.panel_attachments[key] = attachments
+    coordinator.panel_attachments.move_to_end(key)
+    while len(coordinator.panel_attachments) > 100:
+        coordinator.panel_attachments.popitem(last=False)
     connection.send_result(msg["id"], {
         "excerpt": coordinator.panel_excerpts[key],
+        "read": read_confirmed,
+        "date": str(row.get("fechaEnvio", "")),
         "subject": plain_text(row.get("asunto")), "sender": plain_text(row.get("remitente")),
         "children": message_summary(row, coordinator.children)["children"],
-        "content": plain_text(detail.get("mensaje")),
-        "attachments": [plain_text(a.get("nombre")) for a in (detail.get("adjuntos") or row.get("adjuntos") or [])],
+        "content": message_text(detail.get("mensaje")),
+        "content_nodes": message_nodes(detail.get("mensaje")),
+        "attachments": attachments,
     })
     # Reflect any server-side read-state changes without explicitly marking read.
     await coordinator.async_request_refresh()
@@ -238,7 +278,8 @@ async def ws_child(hass, connection, msg):
         connection.send_error(msg["id"], "not_found", "Alumno no configurado.")
         return
     try:
-        result = profile_summary(await coordinator.client.child_profile(msg["child_id"]))
+        raw = await coordinator.profiles.read(msg["child_id"]) if hasattr(coordinator, "profiles") else await coordinator.client.child_profile(msg["child_id"])
+        result = profile_summary(raw)
     except CasviError:
         connection.send_error(msg["id"], "cannot_connect", "No se pudo cargar la información del alumno.")
         return
@@ -304,3 +345,49 @@ def async_remove_panel(hass):
     if not hass.data.get("casvi") and hass.data.get("casvi_panel", {}).get("visible"):
         frontend.async_remove_panel(hass, "colegio")
         hass.data["casvi_panel"]["visible"] = False
+
+
+@websocket_api.websocket_command({
+    vol.Required("type"): "casvi/attachment", vol.Required("entry_id"): str,
+    vol.Required("message_id"): str, vol.Required("recipient_id"): str,
+    vol.Required("index"): vol.All(int, vol.Range(min=0)),
+})
+@websocket_api.require_admin
+@websocket_api.async_response
+async def ws_attachment(hass, connection, msg):
+    coordinator = hass.data.get("casvi", {}).get(msg["entry_id"])
+    attachments = getattr(coordinator, "panel_attachments", {}).get((msg["message_id"], msg["recipient_id"]), [])
+    index = msg["index"]
+    if index < 0 or index >= len(attachments) or not attachments[index].get('url'):
+        connection.send_error(msg['id'], 'not_found', 'Adjunto no disponible para este mensaje.')
+        return
+    try:
+        data, mime = await coordinator.client.read_attachment(attachments[index]['url'])
+    except CasviError:
+        connection.send_error(msg['id'], 'cannot_connect', 'Vista previa disponible para imágenes y PDF de hasta 5 MB.')
+        return
+    connection.send_result(msg['id'], {'data': base64.b64encode(data).decode('ascii'), 'mime': mime})
+
+
+@websocket_api.websocket_command({
+    vol.Required('type'): 'casvi/menu', vol.Required('entry_id'): str,
+    vol.Required('year'): vol.All(int, vol.Range(min=2000, max=2100)),
+    vol.Required('month'): vol.All(int, vol.Range(min=1, max=12)),
+})
+@websocket_api.require_admin
+@websocket_api.async_response
+async def ws_menu(hass, connection, msg):
+    coordinator = hass.data.get('casvi', {}).get(msg['entry_id'])
+    if coordinator is None:
+        connection.send_error(msg['id'], 'not_found', 'Cuenta no disponible.')
+        return
+    try:
+        rows = await coordinator.client.month_menu(msg['year'], msg['month'])
+    except CasviError:
+        connection.send_error(msg['id'], 'cannot_connect', 'No se pudo cargar el menú del mes.')
+        return
+    prefix = f"{msg['year']:04d}-{msg['month']:02d}-"
+    connection.send_result(msg['id'], {'menus': [
+        {'date': str(row.get('fecha', '')), 'menu': plain_text(row.get('menu'))}
+        for row in rows if str(row.get('fecha', '')).startswith(prefix)
+    ]})

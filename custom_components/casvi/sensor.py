@@ -13,6 +13,11 @@ async def async_setup_entry(hass, entry, async_add_entities):
         ("latest", "Casvi último mensaje"),
         ("menu", "Casvi comedor hoy"),
     ])
+    coordinator = entry.runtime_data
+    async_add_entities([CasviUnreadWidget(coordinator, slot) for slot in range(3)] +
+                       [entity for child in coordinator.children
+                        for entity in (CasviUnreadWidget(coordinator, child=child, count=True),
+                                       CasviUnreadWidget(coordinator, child=child))])
 
 
 class CasviSensor(CoordinatorEntity, SensorEntity):
@@ -56,3 +61,56 @@ class CasviSensor(CoordinatorEntity, SensorEntity):
                 "contenido": plain_text((data["detail"] or {}).get("mensaje")),
                 "contenido_disponible": data["detail"] is not None,
                 "adjuntos": [plain_text(a.get("nombre")) for a in item.get("adjuntos", [])]}
+
+
+def unread_rows(coordinator, child=None):
+    """Only explicit recipients; never attribute general mail to a child."""
+    result = []
+    for row in coordinator.data['messages']:
+        if str(row.get('leido')) != '0':
+            continue
+        recipients = {str(c.get('id')) for c in row.get('alumnosReferidos') or [] if isinstance(c, dict)}
+        if row.get('idUsuAlumno'):
+            recipients.add(str(row['idUsuAlumno']))
+        if child is None or child in recipients:
+            result.append(row)
+    return sorted(result, key=lambda r:str(r.get('fechaEnvio') or ''), reverse=True)
+
+
+class CasviUnreadWidget(CoordinatorEntity, SensorEntity):
+    """Stable widget slots, populated without fetching message bodies."""
+    def __init__(self, coordinator, slot=0, child=None, count=False):
+        super().__init__(coordinator)
+        self.slot, self.child, self.count = slot, child, count
+        scope = coordinator.children[child] if child else ''
+        label = 'Mensajes no leídos recientes' if count else f'Mensaje no leído {slot+1}'
+        self._attr_name = f'Casvi {scope} {label}'.replace('  ',' ')
+        self._attr_unique_id = f'{coordinator.entry.entry_id}_widget_{child or "account"}_{"count" if count else slot}'
+        self._attr_icon = 'mdi:email-badge-outline'
+
+    @property
+    def native_value(self):
+        rows = unread_rows(self.coordinator, self.child)
+        if self.count:
+            return len(rows)
+        return (plain_text(rows[self.slot].get('asunto')) or 'Sin asunto')[:250] if len(rows)>self.slot else 'Sin mensajes pendientes'
+
+    @property
+    def extra_state_attributes(self):
+        from urllib.parse import urlencode
+        rows = unread_rows(self.coordinator, self.child)
+        attrs = {'mensajes_examinados':len(self.coordinator.data['messages']),
+                 'pendientes_recientes':len(rows), 'total_buzon':self.coordinator.data['total'],
+                 'alcance':'Mensajes recientes consultados', 'url':'/colegio'}
+        if self.count or len(rows)<=self.slot:
+            return attrs
+        row = rows[self.slot]
+        names = [plain_text(c.get('nombre_completo') or c.get('nombre')) or self.coordinator.children.get(str(c.get('id')), '')
+                 for c in row.get('alumnosReferidos') or [] if isinstance(c, dict)]
+        if not any(names):
+            names = [self.coordinator.children.get(str(row.get('idUsuAlumno')), '') or plain_text(row.get('nombreAlumno'))]
+        attrs.update({'id':str(row['id']), 'id_para':str(row['idPara']),
+                      'fecha':str(row.get('fechaEnvio') or ''), 'remitente':plain_text(row.get('remitente')),
+                      'alumnos':[name for name in names if name], 'asunto':plain_text(row.get('asunto')),
+                      'url':'/colegio?'+urlencode({'entry':self.coordinator.entry.entry_id,'message':row['id'],'recipient':row['idPara']})})
+        return attrs

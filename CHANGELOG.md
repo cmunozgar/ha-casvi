@@ -1,5 +1,17 @@
 # Cambios
 
+## 0.5.0
+
+- Comedor con calendario del mes actual de lunes a viernes y título centrado.
+- Mensajes no leídos entre comedor y clases, con contador en el título.
+- Lectura confirmada en Casvi al abrir un mensaje y actualización del estado en el panel.
+- Mensajes con formato, enlaces en otra pestaña, fecha y cierre de modal compacto.
+- Indicador de adjuntos y vista previa autenticada de imágenes y PDF de hasta 5 MB (hasta 10 páginas), con descarga.
+- Nuevas entidades de mensajes pendientes para widgets: tres mensajes recientes globales y contador y último pendiente por alumno.
+- Fichas de alumnos en caché persistente por curso, compartida con la lectura de horarios; acción casvi.refresh_school_data para renovar los datos.
+- Nombres de pila en las pestañas y tarjetas, menú lateral en móvil y cargadores centrados.
+- Validación: 63 pruebas Python y 3 pruebas JavaScript.
+
 ## 0.4.0
 
 - Inicio con menús de ayer, hoy y mañana, horarios diarios por hijo y mensajes no leídos a todo el ancho.

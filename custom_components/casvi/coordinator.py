@@ -8,6 +8,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 
 from .notifications import MessageNotifications
 from .schedule import ScheduleReader
+from .profiles import ProfileCache
 
 from .api import CasviAuthError, CasviError
 from .const import DOMAIN, DEFAULT_INTERVAL
@@ -22,7 +23,8 @@ class CasviCoordinator(DataUpdateCoordinator):
         self.entry = entry
         self.children = entry.data["children"]
         self.notifications = MessageNotifications(hass, entry)
-        self.schedules = ScheduleReader(hass, client, entry.entry_id)
+        self.profiles = ProfileCache(hass, client, entry.entry_id)
+        self.schedules = ScheduleReader(hass, client, entry.entry_id, self.profiles)
 
     async def _async_update_data(self):
         try:

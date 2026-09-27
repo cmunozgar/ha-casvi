@@ -99,7 +99,7 @@ def test_panel_commands_reject_non_admins():
 
 @pytest.mark.asyncio
 async def test_message_only_fetches_explicitly_selected_inbox_pair():
-    coordinator = SimpleNamespace(children={}, data={'messages': [row()]}, client=SimpleNamespace(read_message=AsyncMock(return_value={'mensaje':'<p>Hello</p>'})), async_request_refresh=AsyncMock())
+    coordinator = SimpleNamespace(children={}, data={'messages': [row()]}, client=SimpleNamespace(mark_message_read=AsyncMock(),read_message=AsyncMock(return_value={'mensaje':'<p>Hello</p>'})), async_request_refresh=AsyncMock())
     hass = SimpleNamespace(data={'casvi': {'account': coordinator}})
     connection = MagicMock()
     # Exercise async handler below the framework auth/scheduling wrappers.
@@ -110,6 +110,8 @@ async def test_message_only_fetches_explicitly_selected_inbox_pair():
     await handler(hass, connection, {'id': 2, 'entry_id': 'account', 'message_id':'1', 'recipient_id':'2'})
     coordinator.client.read_message.assert_awaited_once_with('1', 2)
     assert connection.send_result.call_args.args[1]['content'] == 'Hello'
+    coordinator.client.mark_message_read.assert_awaited_once_with('1', 2)
+    assert connection.send_result.call_args.args[1]['read'] is True
 
 
 @pytest.mark.asyncio
@@ -149,7 +151,7 @@ def test_profile_respects_parent_visibility_and_omits_unneeded_fields():
 async def test_paginated_messages_authorize_historical_read_without_polling():
     from custom_components.casvi.panel import ws_messages
     client = SimpleNamespace(list_messages=AsyncMock(return_value={'messages':[row('old')],'total':101}),
-        read_message=AsyncMock(return_value={'mensaje':'Old content'}))
+        mark_message_read=AsyncMock(),read_message=AsyncMock(return_value={'mensaje':'Old content'}))
     c = SimpleNamespace(children={},data={'messages':[]},client=client,async_request_refresh=AsyncMock())
     hass = SimpleNamespace(data={'casvi':{'account':c}}); connection=MagicMock()
     await ws_messages.__wrapped__.__wrapped__(hass,connection,{'id':1,'entry_id':'account','start':100,'length':20})
@@ -307,3 +309,89 @@ def test_message_excerpt_is_plain_bounded_and_optional():
     assert message_excerpt('a' * 200) == 'a' * 177 + '…'
     assert message_summary(row(), {})['excerpt'] == ''
     assert message_summary({**row(), 'mensaje': '<b>Vista previa</b>'}, {})['excerpt'] == 'Vista previa'
+
+
+def test_attachment_links_only_allow_casvi_downloads():
+    from custom_components.casvi.panel import attachment_links
+    result=attachment_links([{'nombre':'Example.pdf','ruta_descargar':'../download.php?id=1'},
+                             {'nombre':'Bad','ruta_descargar':'javascript:alert(1)'},
+                             {'nombre':'External','ruta_descargar':'https://example.com/file'}])
+    assert result[0]['url']=='https://intranet.casvi.es/download.php?id=1'
+    assert result[1]['url'] is None
+    assert result[2]['url'] is None
+
+
+@pytest.mark.asyncio
+async def test_mark_read_failure_keeps_message_readable_and_pending():
+    from custom_components.casvi.api import CasviError
+    client=SimpleNamespace(read_message=AsyncMock(return_value={'mensaje':'Hello'}),mark_message_read=AsyncMock(side_effect=CasviError('failed')))
+    c=SimpleNamespace(children={},data={'messages':[row()]},client=client,async_request_refresh=AsyncMock())
+    connection=MagicMock()
+    await ws_message.__wrapped__.__wrapped__(SimpleNamespace(data={'casvi':{'account':c}}),connection,{'id':1,'entry_id':'account','message_id':'1','recipient_id':'2'})
+    assert connection.send_result.call_args.args[1]['read'] is False
+    assert connection.send_result.call_args.args[1]['content']=='Hello'
+
+
+@pytest.mark.asyncio
+async def test_mark_read_uses_both_ids_and_checks_confirmation():
+    from custom_components.casvi.api import CasviError
+    client=CasviClient('test','test');client._login=AsyncMock();client._check=AsyncMock()
+    client._request=AsyncMock(return_value={'success':True})
+    await client.mark_message_read('1','2')
+    client._request.assert_awaited_once_with('/controles/mensajesAdmin.php',{'accion':'marcar_leido','id_mensaje':'1','id_para':'2'})
+    client._request.return_value={'success':False}
+    with pytest.raises(CasviError):await client.mark_message_read('1','2')
+
+
+@pytest.mark.asyncio
+async def test_attachment_only_downloads_cached_account_message_attachment():
+    from custom_components.casvi.panel import ws_attachment
+    client = SimpleNamespace(read_attachment=AsyncMock(return_value=(b'%PDF-test', 'application/pdf')))
+    coordinator = SimpleNamespace(client=client, panel_attachments={('1', '2'): [{'url':'https://intranet.casvi.es/file.pdf'}]})
+    hass = SimpleNamespace(data={'casvi': {'account': coordinator}})
+    connection = MagicMock()
+    handler = ws_attachment.__wrapped__.__wrapped__
+    message = {'id':1, 'entry_id':'account', 'message_id':'1', 'recipient_id':'2', 'index':0}
+    await handler(hass, connection, message)
+    assert connection.send_result.call_args.args[1]['mime'] == 'application/pdf'
+    client.read_attachment.assert_awaited_once_with('https://intranet.casvi.es/file.pdf')
+    client.read_attachment.reset_mock()
+    for overrides in ({'entry_id':'other'}, {'recipient_id':'other'}, {'index':-1}, {'index':10}):
+        await handler(hass, connection, message | overrides)
+    client.read_attachment.assert_not_awaited()
+
+
+def test_attachment_requires_admin():
+    from custom_components.casvi.panel import ws_attachment
+    connection = MagicMock()
+    connection.user.is_admin = False
+    with pytest.raises(Unauthorized):
+        ws_attachment(MagicMock(), connection, {'id': 1})
+
+
+@pytest.mark.asyncio
+async def test_month_menu_scoped_account_and_plain_text():
+    from custom_components.casvi.panel import ws_menu
+    client = SimpleNamespace(month_menu=AsyncMock(return_value=[
+        {'fecha':'2026-09-01','menu':'<p>Lentejas</p>'},
+        {'fecha':'2026-10-01','menu':'Other month'},
+    ]))
+    hass = SimpleNamespace(data={'casvi': {'account': SimpleNamespace(client=client)}})
+    connection = MagicMock()
+    message = {'id':1,'entry_id':'account','year':2026,'month':9}
+    await ws_menu.__wrapped__.__wrapped__(hass, connection, message)
+    assert connection.send_result.call_args.args[1] == {'menus':[{'date':'2026-09-01','menu':'Lentejas'}]}
+    client.month_menu.assert_awaited_once_with(2026,9)
+    client.month_menu.reset_mock()
+    await ws_menu.__wrapped__.__wrapped__(hass, connection, message | {'entry_id':'other'})
+    client.month_menu.assert_not_awaited()
+    connection.user.is_admin = False
+    with pytest.raises(Unauthorized):
+        ws_menu(hass,connection,message)
+
+
+def test_message_attachment_indicator_uses_inbox_metadata():
+    from custom_components.casvi.panel import message_summary
+    assert message_summary(row(), {})['attachment_count'] == 0
+    assert message_summary(row() | {'adjuntos': None}, {})['attachment_count'] == 0
+    assert message_summary(row() | {'adjuntos': [{'nombre':'a.pdf'}, {'nombre':'b.png'}]}, {})['attachment_count'] == 2

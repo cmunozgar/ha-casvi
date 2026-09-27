@@ -1,3 +1,6 @@
 refresh_schedules:
   name: Actualizar horarios
   description: Vuelve a descargar y analizar los PDF de horarios de las cuentas Casvi configuradas.
+refresh_school_data:
+  name: Actualizar datos escolares
+  description: Renueva la caché de profesores, compañeros y fichas de alumnos, y vuelve a cargar los horarios.

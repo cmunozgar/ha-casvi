@@ -6,7 +6,7 @@ import base64
 import binascii
 import json
 import re
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlsplit, urljoin
 from datetime import date, timedelta
 from html import unescape
 from html.parser import HTMLParser
@@ -35,16 +35,27 @@ class _Text(HTMLParser):
         self.hidden = 0
 
     def handle_starttag(self, tag, attrs):
-        if tag in ("script", "style"):
-            self.hidden += 1
-        if tag in ("br", "p", "div", "li"):
-            self.parts.append("\n")
+        values = dict(attrs)
+        style = values.get('style', '')
+        hidden = tag in ('script', 'style') or 'hidden' in values or bool(re.search(r'(?:display\s*:\s*none|visibility\s*:\s*hidden)', style, re.I))
+        if not hasattr(self, 'stack'):
+            self.stack = []
+        if tag not in ('br','img','hr','input','meta','link','wbr','area','base','col','embed','param','source','track'):
+            self.stack.append((tag, hidden))
+            if hidden:
+                self.hidden += 1
+        if not self.hidden and tag in ('br','p','div','li'):
+            self.parts.append('\n')
 
     def handle_endtag(self, tag):
-        if tag in ("script", "style"):
-            self.hidden = max(0, self.hidden - 1)
-        if tag in ("p", "div", "li"):
-            self.parts.append("\n")
+        stack = getattr(self, 'stack', [])
+        for index in range(len(stack)-1, -1, -1):
+            if stack[index][0] == tag:
+                self.hidden -= sum(hidden for _, hidden in stack[index:])
+                del stack[index:]
+                break
+        if not self.hidden and tag in ('p','div','li'):
+            self.parts.append('\n')
 
     def handle_data(self, data):
         if not self.hidden:
@@ -55,6 +66,38 @@ def plain_text(value):
     parser = _Text()
     parser.feed(str(value or "").replace("\\r\\n", "\n"))
     return re.sub(r"\n{3,}", "\n\n", unescape("".join(parser.parts))).strip()
+
+
+class _MessageText(_Text):
+    def __init__(self):
+        super().__init__()
+        self.link = None
+
+    def handle_starttag(self, tag, attrs):
+        super().handle_starttag(tag, attrs)
+        if tag == 'a' and not self.hidden:
+            href = dict(attrs).get('href', '')
+            try:
+                url = urljoin('https://intranet.casvi.es/', href)
+                parsed = urlsplit(url)
+                if href and parsed.scheme in ('http', 'https') and parsed.hostname and not parsed.username:
+                    self.link = (url, len(self.parts))
+            except ValueError:
+                pass
+
+    def handle_endtag(self, tag):
+        if tag == 'a' and self.link:
+            url, start = self.link
+            if ''.join(self.parts[start:]).strip() != url:
+                self.parts.append(' (' + url + ')')
+            self.link = None
+        super().handle_endtag(tag)
+
+
+def message_text(value):
+    parser = _MessageText()
+    parser.feed(str(value or '').replace('\\r\\n', '\n'))
+    return re.sub(r'\n{3,}', '\n\n', ''.join(parser.parts)).strip()
 
 
 def discover_children(html):
@@ -275,6 +318,53 @@ class CasviClient:
             return self._photo_payload(bytes(photo))
         return await self._authenticated(load)
 
+    async def month_menu(self, year, month):
+        if not 2000 <= year <= 2100 or not 1 <= month <= 12:
+            raise CasviError("Invalid month")
+        async def load():
+            result = await self._request('/controles/comedor.php', {
+                'accion': 'obtener_menus_mes', 'anio': str(year), 'mes': str(month),
+            }, multipart=True)
+            if str(result.get('error')) != '0' or not isinstance(result.get('menus'), list):
+                raise CasviError("Invalid menu response")
+            return result['menus']
+        return await self._authenticated(load)
+
+    async def read_attachment(self, url):
+        """Fetch an inbox-authorized attachment without forwarding cookies elsewhere."""
+        parsed = urlsplit(url)
+        if parsed.scheme != 'https' or parsed.netloc != 'intranet.casvi.es':
+            raise CasviError("Invalid attachment origin")
+        async def load():
+            try:
+                async with self._session.get(url, allow_redirects=False) as response:
+                    if response.status in (301, 302, 303, 307, 308, 401):
+                        raise SessionExpired("Session expired")
+                    if response.status != 200:
+                        raise CasviError("Attachment unavailable")
+                    data = bytearray()
+                    async for chunk in response.content.iter_chunked(65536):
+                        data.extend(chunk)
+                        if len(data) > 5 * 1024 * 1024:
+                            raise CasviError("Attachment exceeds 5 MB")
+            except (aiohttp.ClientError, TimeoutError) as err:
+                raise CasviError("Cannot download attachment") from err
+            data = bytes(data)
+            if data.startswith(b'%PDF-'):
+                mime = 'application/pdf'
+            elif data.startswith(b'\x89PNG\r\n\x1a\n'):
+                mime = 'image/png'
+            elif data.startswith(b'\xff\xd8\xff'):
+                mime = 'image/jpeg'
+            elif data.startswith((b'GIF87a', b'GIF89a')):
+                mime = 'image/gif'
+            elif data.startswith(b'RIFF') and data[8:12] == b'WEBP':
+                mime = 'image/webp'
+            else:
+                raise CasviError("Unsupported attachment format")
+            return data, mime
+        return await self._authenticated(load)
+
     async def read_document(self, child_id, document):
         """Download only the known viewer endpoint, with a bounded PDF payload."""
         params = {"tipo": document["kind"], "doc": document["id"]}
@@ -335,6 +425,16 @@ class CasviClient:
                 raise CasviError("Invalid message detail")
             return detail
         return await self._authenticated(load)
+
+    async def mark_message_read(self, message_id, recipient_id):
+        """Called only when a user opens a message in the panel."""
+        async def mark():
+            result = await self._request('/controles/mensajesAdmin.php', {
+                'accion':'marcar_leido', 'id_mensaje':str(message_id), 'id_para':str(recipient_id),
+            })
+            if result.get('success') is not True:
+                raise CasviError('Read confirmation failed')
+        await self._authenticated(mark)
 
     async def snapshot(self, children, today: date, message_limit=50):
         async def load():

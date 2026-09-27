@@ -32,7 +32,7 @@ No copies el APK, los informes de ingeniería inversa ni el directorio de trabaj
 
 Después de actualizar y reiniciar, aparece **Colegio** en el menú lateral. La pestaña Inicio reúne el menú de hoy, próximos eventos por hijo y los últimos 10 mensajes. Todos los mensajes permite recorrer el buzón con paginación del servidor, 20 mensajes por página. Se muestran los hijos destinatarios cuando Casvi los proporciona; si no los indica, no se deducen del asunto. Si hay varias cuentas, permite elegir la familia. El panel y su lectura de mensajes requieren un usuario administrador de Home Assistant. Las entidades existentes conservan los permisos habituales de Home Assistant.
 
-Pulsa un mensaje para leer su texto. No se ejecuta `marcar_leido`, pero no se ha confirmado que el servidor nunca cambie el estado al consultar un pendiente. La actualización automática solo lista los mensajes y no abre los pendientes. Los adjuntos se muestran por nombre: para descargarlos usa el enlace a la intranet e inicia sesión allí. Las imágenes y el formato HTML del mensaje se convierten en texto.
+Al abrir un mensaje se consulta su texto y se solicita marcarlo como leído en Casvi. Si la confirmación falla se muestra un aviso y se conserva como pendiente. La actualización automática no abre ni marca mensajes pendientes. Los adjuntos incluyen enlaces de descarga de Casvi, que pueden requerir iniciar sesión en la intranet. El mensaje se convierte en texto y se omiten los fragmentos ocultos del editor.
 
 Para activar avisos:
 
@@ -113,3 +113,19 @@ Código bajo licencia MIT. Se utiliza el logotipo de la intranet para identifica
 La ficha del alumno interpreta tablas de horario con texto y columnas de lunes a viernes. Muestra las clases por día, una tabla semanal e indicadores de natación, educación física y psicomotricidad. La lectura se realiza en el navegador con PDF.js, sin enviar el documento a servicios externos ni usar OCR. El PDF original sigue disponible.
 
 Se han comprobado los formatos de Infantil y Primaria de Casvi. Los documentos escaneados y otros diseños pueden no reconocerse; en ese caso se muestra un aviso para consultar el original. `EF/NAT` se conserva como actividad ambigua, sin confirmar piscina ni educación física por separado. Se trata del horario semanal habitual: no aplica el calendario de festivos, vacaciones o cambios puntuales. La integración crea además dos entidades `binary_sensor` por alumno: Piscina hoy y Educación física hoy. Educación física incluye psicomotricidad. Un horario ausente o ilegible deja las entidades no disponibles; EF/NAT deja el estado desconocido salvo que otra franja confirme la actividad. Los fines de semana quedan desactivadas. Se basan en el horario habitual, sin excluir festivos. El horario extraído se guarda en `.storage/casvi.schedules.<entry_id>` y se reutiliza tras los reinicios. Cada día se comprueba si cambió el documento o el curso escolar. La acción `casvi.refresh_schedules` fuerza una nueva descarga, útil si el colegio reemplaza un PDF sin cambiar su identificador. El panel y las entidades reutilizan la tabla almacenada.
+
+### Entidades para widgets de mensajes
+
+Además del contador general, se crean tres sensores de mensaje no leído (posiciones 1, 2 y 3, más reciente primero). Por alumno se crean un contador de pendientes recientes y un sensor del último pendiente. El estado del sensor de mensaje es su asunto; los atributos incluyen `fecha`, `remitente`, `alumnos`, `id`, `id_para` y `url` para abrir el mensaje en el panel. No se descarga el cuerpo ni se marca leído al consultar estas entidades.
+
+Los contadores y posiciones se calculan sobre la ventana configurada de mensajes recientes (50 por defecto), no sobre todo el buzón. Los mensajes sin destinatario alumno explícito solo aparecen en los sensores generales. Al quedar vacía una posición muestra «Sin mensajes pendientes» y elimina los atributos del mensaje anterior.
+
+En la aplicación de Home Assistant para iOS, estos sensores se pueden seleccionar para mostrar su estado en un widget compatible. La actualización del widget depende de iOS y puede retrasarse respecto a Home Assistant. Consulta la [documentación de widgets iOS](https://companion.home-assistant.io/docs/integrations/ios-widgets/).
+
+Las fichas de alumnos (profesores y compañeros incluidos) se guardan por cuenta
+ en el almacenamiento local de Home Assistant y se reutilizan tras reiniciar.
+La caché se renueva al comenzar el curso, el 1 de septiembre. Para cambios durante
+el curso, ejecuta la acción `casvi.refresh_school_data`; renueva las fichas y los
+horarios. `casvi.refresh_schedules` también renueva la ficha antes de buscar el PDF.
+Las respuestas incompletas no se conservan como caché anual. Los mensajes y menús
+siguen actualizándose normalmente. Al eliminar la integración se borra su caché.

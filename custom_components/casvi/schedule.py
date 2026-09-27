@@ -57,8 +57,9 @@ def activity_today(rows, today: date, activity):
 
 class ScheduleReader:
     """Refresh once per school day; retry failed reads on the next poll."""
-    def __init__(self, hass, client, entry_id=None):
+    def __init__(self, hass, client, entry_id=None, profiles=None):
         self.hass, self.client = hass, client
+        self.profiles = profiles
         self.cache = {}
         self.store = Store(hass, 1, f"casvi.schedules.{entry_id}") if entry_id else None
         self.loaded = False
@@ -84,7 +85,7 @@ class ScheduleReader:
         cached = self.cache.get(child)
         if cached and cached['checked'] == today.isoformat() and child not in self.force:
             return cached
-        profile = await self.client.child_profile(child)
+        profile = await self.profiles.read(child, today) if self.profiles else await self.client.child_profile(child)
         group = profile['group']
         document = next((d for d in group.get('documentos', []) if re.search(r'\bhorario\b', normalized(d.get('titulo')))), None)
         if document is None:

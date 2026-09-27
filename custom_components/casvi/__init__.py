@@ -10,9 +10,18 @@ async def async_setup_entry(hass, entry):
     if not hass.services.has_service('casvi', 'refresh_schedules'):
         async def refresh_schedules(call):
             for current in hass.data.get('casvi', {}).values():
+                await current.profiles.invalidate()
                 await current.schedules.refresh(current.children)
                 await current.async_request_refresh()
         hass.services.async_register('casvi', 'refresh_schedules', refresh_schedules)
+    if not hass.services.has_service('casvi', 'refresh_school_data'):
+        async def refresh_school_data(call):
+            for current in hass.data.get('casvi', {}).values():
+                await current.profiles.invalidate()
+                current.panel_profiles = {}
+                await current.schedules.refresh(current.children)
+                await current.async_request_refresh()
+        hass.services.async_register('casvi', 'refresh_school_data', refresh_school_data)
     client = CasviClient(entry.data["username"], entry.data["password"])
     coordinator = CasviCoordinator(hass, entry, client)
     try:
@@ -47,3 +56,4 @@ async def async_remove_entry(hass, entry):
     await Store(hass, 1, f"casvi.messages.{entry.entry_id}").async_remove()
 
     await Store(hass, 1, f"casvi.schedules.{entry.entry_id}").async_remove()
+    await Store(hass, 1, f"casvi.profiles.{entry.entry_id}").async_remove()

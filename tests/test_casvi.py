@@ -179,3 +179,15 @@ async def test_menu_includes_adjacent_month_at_year_boundary(today, adjacent):
     result = await client.snapshot({}, today)
     assert len(result['menus']) == 2
     assert client._request.call_args.args[1] == {'accion':'obtener_menus_mes','anio':str(adjacent[0]),'mes':str(adjacent[1])}
+
+
+def test_message_hidden_editor_markers_are_not_visible():
+    assert plain_text('<p>Hola<span style="display: none; line-height: 0">?<b>?</b></span> mundo</p>') == 'Hola mundo'
+    assert plain_text('<p>¿Cómo estás?</p>') == '¿Cómo estás?'
+
+
+def test_message_preserves_safe_anchor_destinations():
+    from custom_components.casvi.api import message_text
+    assert message_text('<a href="https://example.com/a?x=1&amp;y=2">Formulario</a>') == 'Formulario (https://example.com/a?x=1&y=2)'
+    assert message_text('<a href="javascript:alert(1)">Texto</a>') == 'Texto'
+    assert message_text('<span hidden><a href="https://example.com">Oculto</a></span>Visible') == 'Visible'
