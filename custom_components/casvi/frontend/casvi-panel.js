@@ -23,6 +23,7 @@ class CasviSchoolPanel extends HTMLElement {
       .month-scroll{overflow-x:auto}.month-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;min-width:600px}.month-weekday{text-align:center;font-weight:600;padding:8px}.month-day{padding:10px;min-height:150px;border:1px solid var(--divider-color,#dce3e8);border-radius:6px;background:var(--card-background-color,white)}.month-day.today{border:2px solid var(--primary-color,#12677b)}.month-day p{font-size:13px;white-space:pre-line;overflow-wrap:anywhere;margin:8px 0 0}.month-day time{font-weight:650}.month-day.empty-day{background:transparent;border:0}.month-toolbar{display:block;width:100%}.month-toolbar h2{width:100%;margin:0;text-transform:capitalize;text-align:center}
       #mobile-section{display:none;position:relative}#mobile-section summary{display:flex;align-items:center;justify-content:space-between;gap:12px;list-style:none;cursor:pointer;border:1px solid var(--divider-color,#dce3e8);border-radius:12px;padding:12px 16px;background:var(--card-background-color,white);min-height:50px;box-shadow:0 2px 8px #10253506}#mobile-section summary::-webkit-details-marker{display:none}#mobile-current{display:flex;align-items:center;gap:12px;font-weight:600}#mobile-current svg{color:var(--primary-color,#12677b)}.section-chevron{color:var(--secondary-text-color,#526575);transition:transform .15s}#mobile-section[open] .section-chevron{transform:rotate(180deg)}#mobile-section[open] summary{border-color:var(--primary-color,#12677b)}#mobile-section summary:focus-visible{outline:3px solid #d79a25;outline-offset:3px}#mobile-options{position:absolute;top:calc(100% + 8px);left:0;right:0;z-index:20;padding:6px;background:var(--card-background-color,white);border:1px solid var(--divider-color,#dce3e8);border-radius:14px;box-shadow:0 12px 32px #10253522;max-height:60vh;overflow:auto}#mobile-options button{display:flex;align-items:center;gap:12px;width:100%;border:0;border-radius:9px;padding:12px;text-align:left;background:transparent}#mobile-options button[aria-current="page"]{background:var(--secondary-background-color,#e2f3f6);color:var(--primary-color,#12677b);font-weight:600}#mobile-options button[aria-current="page"]::after{content:'✓';margin-left:auto}#mobile-options button:hover{background:var(--secondary-background-color,#edf3f7)}@media(max-width:600px){.panel-navigation nav{display:none}#mobile-section{display:block;flex:1;min-width:0;width:100%}.panel-navigation{align-items:center;margin-bottom:24px}}
 
+      .agenda-date{display:none}@media(max-width:600px){.month-scroll{overflow:visible}.month-grid{display:flex;flex-direction:column;min-width:0;gap:14px}.month-weekday,.month-day.empty-day{display:none}.month-day{min-height:0;padding:18px;scroll-margin-top:16px}.month-day p{font-size:16px;line-height:1.7;margin-top:12px}.month-day time{display:block;font-size:17px}.calendar-date{display:none}.agenda-date{display:inline}.month-day.today time{color:var(--primary-color,#12677b)}}
       </style>
       <main>
         <select id="account" aria-label="Cuenta familiar" hidden></select>
@@ -187,9 +188,17 @@ class CasviSchoolPanel extends HTMLElement {
         if(day<1||day>days){cell.classList.add('empty-day');cell.setAttribute('aria-hidden','true');grid.append(cell);continue;}
         const key=`${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
         if(key===account.date)cell.classList.add('today');
-        const date=document.createElement('time');date.dateTime=key;date.textContent=String(day);
+        const date=document.createElement('time');date.dateTime=key;
+        const number=document.createElement('span');number.className='calendar-date';number.textContent=String(day);
+        const fullDate=document.createElement('span');fullDate.className='agenda-date';fullDate.textContent=(key===account.date?'Hoy · ':'')+new Intl.DateTimeFormat('es-ES',{weekday:'long',day:'numeric',month:'long',timeZone:'UTC'}).format(new Date(key+'T12:00:00Z'));
+        date.append(number,fullDate);
         const menu=document.createElement('p');menu.textContent=result.menus.filter(m=>m.date===key).map(m=>m.menu).filter(Boolean).join('\n')||'Sin menú publicado';
         cell.append(date,menu);grid.append(cell);
+      }
+      if(matchMedia('(max-width:600px)').matches){
+        const dates=[...grid.querySelectorAll('time')];
+        const target=dates.find(date=>date.dateTime>=account.date)||dates.at(-1);
+        requestAnimationFrame(()=>{if(request===this.menuRequest&&this.view==='dining')target?.parentElement.scrollIntoView({block:'start',behavior:'instant'});});
       }
     }catch(_){if(request===this.menuRequest){this.$('month-status').textContent='No se pudo cargar el menú. ';const retry=document.createElement('button');retry.textContent='Reintentar';retry.onclick=()=>this.loadMenuMonth();this.$('month-status').append(retry);}}
   }

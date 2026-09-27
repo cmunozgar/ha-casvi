@@ -86,7 +86,7 @@ class CasviUnreadWidget(CoordinatorEntity, SensorEntity):
         label = 'Mensajes no leídos recientes' if count else f'Mensaje no leído {slot+1}'
         self._attr_name = f'Casvi {scope} {label}'.replace('  ',' ')
         self._attr_unique_id = f'{coordinator.entry.entry_id}_widget_{child or "account"}_{"count" if count else slot}'
-        self._attr_icon = 'mdi:email-badge-outline'
+        self._attr_icon = 'mdi:email-multiple-outline' if count else 'mdi:email-alert-outline'
 
     @property
     def native_value(self):

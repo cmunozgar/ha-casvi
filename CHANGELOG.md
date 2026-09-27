@@ -1,5 +1,15 @@
 # Cambios
 
+## 0.5.2
+
+- Comedor en formato agenda diaria en móvil, conservando el calendario mensual en escritorio.
+- Desplazamiento al día actual al abrir el comedor; si no aparece, al siguiente día mostrado o al último del mes.
+- Corrección de los iconos de las entidades de mensajes pendientes.
+
+El logo de la tienda HACS sigue pendiente de la corrección de HACS para marcas locales.
+
+Después de actualizar en HACS, reinicia Home Assistant y recarga el panel.
+
 ## 0.5.1
 
 - Carrusel de menús en móvil: hoy ocupa todo el ancho, con desplazamiento a ayer y mañana.
