@@ -1,5 +1,14 @@
 # Cambios
 
+## 0.5.1
+
+- Carrusel de menús en móvil: hoy ocupa todo el ancho, con desplazamiento a ayer y mañana.
+- Indicadores circulares para cambiar de día y señalar la tarjeta visible.
+- Selector móvil de secciones con iconos, sección activa resaltada y acceso al menú lateral.
+- Se mantienen las pestañas y las tres tarjetas en escritorio.
+
+Después de actualizar en HACS, reinicia Home Assistant y recarga el panel.
+
 ## 0.5.0
 
 - Comedor con calendario del mes actual de lunes a viernes y título centrado.

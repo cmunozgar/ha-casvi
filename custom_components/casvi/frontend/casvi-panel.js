@@ -11,7 +11,7 @@ class CasviSchoolPanel extends HTMLElement {
 
         .teachers{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin:0 0 30px}.teacher{display:flex;gap:16px;padding:16px;background:var(--card-background-color,white);border:1px solid var(--divider-color,#dce3e8);border-radius:8px;min-width:0}.portrait{flex:0 0 80px;height:100px;display:flex;align-items:center;justify-content:center;background:var(--secondary-background-color,#edf3f7);border-radius:6px;overflow:hidden;color:var(--secondary-text-color,#526575);font-size:13px}.portrait img{width:100%;height:100%;object-fit:cover;object-position:top}.teacher h3{font-size:17px;margin:0 0 6px;overflow-wrap:anywhere}.teacher p{font-size:14px;color:var(--secondary-text-color,#526575);margin:0}.teacher-details{min-width:0}
       .schedule-section{margin:0 0 30px;padding:22px;background:var(--card-background-color,white);border-radius:8px}.schedule-status{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}.schedule-status span{display:inline-flex;align-items:center;gap:7px;padding:7px 12px;border-radius:6px;background:var(--secondary-background-color,#edf3f7);font-size:14px}.schedule-status .active{background:#e2f3f6;color:#09586c}.schedule-table{overflow:auto}.schedule-table table{border-collapse:collapse;width:100%;font-size:14px}.schedule-table th,.schedule-table td{padding:10px;text-align:left;border-bottom:1px solid var(--divider-color,#dce3e8);vertical-align:top}.schedule-table th{white-space:nowrap}.schedule-table.week table{table-layout:fixed;min-width:620px}.schedule-table.week th,.schedule-table.week td{min-width:0;white-space:normal;overflow-wrap:anywhere;padding:9px 7px;font-size:13px}.schedule-table.week th:first-child{width:100px;white-space:nowrap}.schedule-section details{margin-top:18px}.schedule-section summary{cursor:pointer}
-      .meal-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr) minmax(0,1fr);gap:18px;margin-bottom:28px;align-items:stretch}.meal-row .menu{margin:0;padding:20px;border-top-color:var(--divider-color,#bcc9d1);overflow-wrap:anywhere}.meal-row .today{border-top-color:#12677b;box-shadow:0 0 0 1px #12677b33}.meal-row h2{font-size:19px;margin:9px 0}.meal-row .today h2{color:var(--primary-color,#12677b)}@media(max-width:600px){.meal-row{gap:8px;grid-template-columns:repeat(3,minmax(0,1fr))}.meal-row .menu{padding:10px}.meal-row h2{font-size:15px}.meal-row .date{font-size:12px}.meal-row p{font-size:13px;line-height:1.5}}
+      .meal-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr) minmax(0,1fr);gap:18px;margin-bottom:28px;align-items:stretch}.meal-row .menu{margin:0;padding:20px;border-top-color:var(--divider-color,#bcc9d1);overflow-wrap:anywhere}.meal-row .today{border-top-color:#12677b;box-shadow:0 0 0 1px #12677b33}.meal-row h2{font-size:19px;margin:9px 0}.meal-row .today h2{color:var(--primary-color,#12677b)} .meal-controls{display:none}@media(max-width:600px){.meal-row{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;scrollbar-width:none;margin-bottom:12px}.meal-row::-webkit-scrollbar{display:none}.meal-row .menu{flex:0 0 100%;min-width:0;scroll-snap-align:start;scroll-snap-stop:always;padding:20px}.meal-row h2{font-size:21px}.meal-row .date{font-size:14px}.meal-row p{font-size:16px;line-height:1.7}.meal-controls{display:flex;justify-content:center;gap:8px;margin-bottom:28px}.meal-controls button{display:flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border:0;border-radius:50%;background:transparent}.meal-controls button::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--divider-color,#bcc9d1)}.meal-controls button[aria-pressed="true"]::before{background:var(--primary-color,#12677b);transform:scale(1.25)}}
       .home-schedule-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:20px;margin-bottom:28px}.home-schedule-cards .schedule-section{margin:0;min-width:0}.home-schedule-cards h3{margin:0;font-size:20px}
       .schedule-status svg{flex-shrink:0}
       #account:not([hidden]){display:block;margin-bottom:20px}
@@ -21,11 +21,13 @@ class CasviSchoolPanel extends HTMLElement {
       .panel-navigation{display:flex;align-items:flex-start;gap:8px}.panel-navigation nav{flex:1;min-width:0}#sidebar-toggle{display:none;flex:0 0 44px;width:44px;height:44px;align-items:center;justify-content:center;padding:10px;border:0;background:transparent}@media(max-width:870px){#sidebar-toggle{display:inline-flex}}
       .message-body div{margin:0}.message-body ul,.message-body ol{padding-left:1.5em;margin:.6em 0 1em}.message-body li{margin:.25em 0}.message-body blockquote{margin:1em 0;padding-left:1em;border-left:3px solid var(--divider-color,#dce3e8)}.message-body h1,.message-body h2,.message-body h3,.message-body h4{font-size:1.1em;margin:1em 0 .5em}.message-body p:empty{display:none}
       .month-scroll{overflow-x:auto}.month-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;min-width:600px}.month-weekday{text-align:center;font-weight:600;padding:8px}.month-day{padding:10px;min-height:150px;border:1px solid var(--divider-color,#dce3e8);border-radius:6px;background:var(--card-background-color,white)}.month-day.today{border:2px solid var(--primary-color,#12677b)}.month-day p{font-size:13px;white-space:pre-line;overflow-wrap:anywhere;margin:8px 0 0}.month-day time{font-weight:650}.month-day.empty-day{background:transparent;border:0}.month-toolbar{display:block;width:100%}.month-toolbar h2{width:100%;margin:0;text-transform:capitalize;text-align:center}
+      #mobile-section{display:none;position:relative}#mobile-section summary{display:flex;align-items:center;justify-content:space-between;gap:12px;list-style:none;cursor:pointer;border:1px solid var(--divider-color,#dce3e8);border-radius:12px;padding:12px 16px;background:var(--card-background-color,white);min-height:50px;box-shadow:0 2px 8px #10253506}#mobile-section summary::-webkit-details-marker{display:none}#mobile-current{display:flex;align-items:center;gap:12px;font-weight:600}#mobile-current svg{color:var(--primary-color,#12677b)}.section-chevron{color:var(--secondary-text-color,#526575);transition:transform .15s}#mobile-section[open] .section-chevron{transform:rotate(180deg)}#mobile-section[open] summary{border-color:var(--primary-color,#12677b)}#mobile-section summary:focus-visible{outline:3px solid #d79a25;outline-offset:3px}#mobile-options{position:absolute;top:calc(100% + 8px);left:0;right:0;z-index:20;padding:6px;background:var(--card-background-color,white);border:1px solid var(--divider-color,#dce3e8);border-radius:14px;box-shadow:0 12px 32px #10253522;max-height:60vh;overflow:auto}#mobile-options button{display:flex;align-items:center;gap:12px;width:100%;border:0;border-radius:9px;padding:12px;text-align:left;background:transparent}#mobile-options button[aria-current="page"]{background:var(--secondary-background-color,#e2f3f6);color:var(--primary-color,#12677b);font-weight:600}#mobile-options button[aria-current="page"]::after{content:'✓';margin-left:auto}#mobile-options button:hover{background:var(--secondary-background-color,#edf3f7)}@media(max-width:600px){.panel-navigation nav{display:none}#mobile-section{display:block;flex:1;min-width:0;width:100%}.panel-navigation{align-items:center;margin-bottom:24px}}
+
       </style>
       <main>
         <select id="account" aria-label="Cuenta familiar" hidden></select>
-        <div class="panel-navigation"><button id="sidebar-toggle" aria-label="Abrir menú lateral" title="Abrir menú lateral"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><nav id="tabs" aria-label="Secciones del colegio" role="tablist"></nav></div><div id="error" role="status" class="error" hidden></div><div id="loading"></div>
-        <section id="meal-row" class="meal-row" aria-label="Menús del comedor" hidden></section><div id="content" class="grid" hidden>
+        <div class="panel-navigation"><button id="sidebar-toggle" aria-label="Abrir menú lateral" title="Abrir menú lateral"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><details id="mobile-section"><summary aria-label="Elegir sección"><span id="mobile-current"></span><svg class="section-chevron" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><div id="mobile-options" aria-label="Secciones del colegio"></div></details><nav id="tabs" aria-label="Secciones del colegio" role="tablist"></nav></div><div id="error" role="status" class="error" hidden></div><div id="loading"></div>
+        <section id="meal-row" class="meal-row" aria-label="Menús del comedor" tabindex="0" hidden></section><div id="meal-controls" class="meal-controls" aria-label="Día del menú" hidden></div><div id="content" class="grid" hidden>
           <section><div class="toolbar"><h2 id="messages-title">Últimos mensajes</h2><button id="filter" aria-pressed="false">Solo pendientes</button></div><p id="count" class="hint"></p><div id="messages"></div><div id="pager" class="pager" hidden><button id="previous">Anterior</button><span id="page-label"></span><button id="next">Siguiente</button></div></section>
         </div>
         <section id="home-schedules" hidden><h2>Clases de hoy</h2><div id="home-schedule-cards" class="home-schedule-cards"></div></section>
@@ -33,7 +35,14 @@ class CasviSchoolPanel extends HTMLElement {
         <section id="child-view" hidden><div class="child-heading"><h2 id="child-name"></h2><p id="child-group"></p><p id="child-tutor"></p><p id="child-status" role="status"></p></div><section id="schedule-section" class="schedule-section" hidden><h2>Horario semanal</h2><p id="schedule-note" class="hint"></p><div id="schedule-week-table" class="schedule-table week"></div></section><section id="teacher-section"><h2>Profesores</h2><div id="teachers" class="teachers"></div></section><section id="child-data"><h2>Compañeros de clase</h2><ol id="classmates" class="people"></ol></section></section>
         <dialog><div class="dialog-head"><h2 id="subject"></h2><button id="close" class="modal-close" aria-label="Cerrar mensaje" title="Cerrar"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div><p id="sender" class="hint"></p><div id="body" class="body" role="status"></div><div id="attachments"></div></dialog>
       </main>`;
+    this.shadowRoot.addEventListener('click',event=>{if(!this.$('mobile-section').contains(event.target))this.$('mobile-section').open=false;});
+    this.$('mobile-section').addEventListener('keydown',event=>{if(event.key==='Escape'){this.$('mobile-section').open=false;this.$('mobile-section').querySelector('summary').focus();}});
     this.$('sidebar-toggle').onclick=()=>this.dispatchEvent(new Event('hass-toggle-menu',{bubbles:true,composed:true}));
+    this.mealIndex=1;
+    this.$('meal-controls').replaceChildren(...['Ayer','Hoy','Mañana'].map((label,index)=>{const button=document.createElement('button');button.setAttribute('aria-label',label);button.title=label;button.onclick=()=>{this.mealIndex=index;this.positionMeal(true);};return button;}));
+    this.$('meal-row').onscroll=()=>{if(!matchMedia('(max-width:600px)').matches)return;const row=this.$('meal-row');if(!row.clientWidth)return;this.mealIndex=Math.max(0,Math.min(2,Math.round(row.scrollLeft/(row.clientWidth+12))));this.updateMealControls();};
+    this.$('meal-row').onkeydown=event=>{if(!matchMedia('(max-width:600px)').matches||!['ArrowLeft','ArrowRight'].includes(event.key))return;event.preventDefault();this.mealIndex=Math.max(0,Math.min(2,this.mealIndex+(event.key==='ArrowRight'?1:-1)));this.positionMeal(true);};
+    this.mealResize=new ResizeObserver(()=>this.positionMeal());
     this.$('loading').append(this.loader('Cargando el colegio'));
     this.$('account').onchange = () => {this.page=null;this.profile=null;this.navigate('home');};
     this.$('previous').onclick=()=>this.loadPage(Math.max(0,this.offset-20));
@@ -49,8 +58,8 @@ class CasviSchoolPanel extends HTMLElement {
   $(id) {return this.shadowRoot.getElementById(id);}
   set hass(value) {this._hass=value; if(this.isConnected && !this.started){this.started=true; this.load(true);} this.handleDeepLink();}
   set route(value) {this._route=value; this.handleDeepLink();}
-  connectedCallback() {if(this._hass && !this.started){this.started=true;this.load(true);} this.timer=setInterval(()=>this.load(),30000);}
-  disconnectedCallback() {this.homeRequest=(this.homeRequest||0)+1;clearInterval(this.timer);this.clearPDF();this.started=false;}
+  connectedCallback() {this.mealResize.observe(this.$('meal-row'));if(this._hass && !this.started){this.started=true;this.load(true);} this.timer=setInterval(()=>this.load(),30000);}
+  disconnectedCallback() {this.mealResize.disconnect();this.homeRequest=(this.homeRequest||0)+1;clearInterval(this.timer);this.clearPDF();this.started=false;}
   async load(refresh=false) {
     if(!this._hass) return;
     if(this.loading){this.refreshPending=this.refreshPending||refresh;return;}
@@ -82,6 +91,7 @@ class CasviSchoolPanel extends HTMLElement {
   render() {
     const a=this.accounts.find(a=>a.entry_id===this.$('account').value)||this.accounts[0];
     this.$('meal-row').hidden=!a||this.view!=='home';
+    this.$('meal-controls').hidden=!a||this.view!=='home';
     this.$('home-schedules').hidden=!a||this.view!=='home';
     if(a&&this.view==='home')this.renderHomeSchedules(a);
     this.$('content').hidden=!a || this.view.startsWith('child:') || this.view==='dining';
@@ -114,7 +124,16 @@ class CasviSchoolPanel extends HTMLElement {
     const date=new Date(start);if(Number.isNaN(date.getTime()))return '';
     return new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Madrid',year:'numeric',month:'2-digit',day:'2-digit'}).format(date);
   }
+  updateMealControls(){[...this.$('meal-controls').children].forEach((button,index)=>button.setAttribute('aria-pressed',String(index===this.mealIndex)));}
+  positionMeal(smooth=false){
+    const row=this.$('meal-row');if(row.hidden||!row.clientWidth)return;
+    row.scrollTo({left:matchMedia('(max-width:600px)').matches?this.mealIndex*(row.clientWidth+12):0,behavior:smooth&&!matchMedia('(prefers-reduced-motion:reduce)').matches?'smooth':'instant'});this.updateMealControls();
+  }
   renderMeals(account){
+    const signature=JSON.stringify([account.entry_id,account.date,account.menus,account.menu]);
+    if(this.mealSignature===signature)return;
+    if(this.mealDate!==account.date||this.mealAccount!==account.entry_id)this.mealIndex=1;
+    this.mealDate=account.date;this.mealAccount=account.entry_id;this.mealSignature=signature;
     const titles=['Qué comimos ayer','Qué comemos hoy','Qué comeremos mañana'];
     this.$('meal-row').replaceChildren(...[-1,0,1].map((offset,index)=>{
       const date=new Date(account.date+'T12:00:00Z');date.setUTCDate(date.getUTCDate()+offset);const key=date.toISOString().slice(0,10);
@@ -124,12 +143,16 @@ class CasviSchoolPanel extends HTMLElement {
       const title=document.createElement('h2');title.textContent=titles[index];const content=document.createElement('p');content.textContent=menu||'No hay menú publicado para este día.';
       article.append(label,title,content);return article;
     }));
+    this.positionMeal();
   }
   currentAccount(){return this.accounts.find(a=>a.entry_id===this.$('account').value)||this.accounts[0];}
   recipientLabel(m){return (m.children||[]).map(c=>c.name).join(', ')||'Destinatario no indicado por Casvi';}
   childGivenName(child){return child.given_name?.trim()||child.name?.trim().split(/\s+/)[0]||'Alumno';}
   renderTabs(a){
     const tabs=[['home','Inicio','home'],['messages','Mensajes','mail'],['dining','Comedor','dining'],...(a.children||[]).map(c=>['child:'+c.id,this.childGivenName(c),'student'])];
+    const selected=tabs.find(([value])=>value===this.view)||tabs[0];
+    this.$('mobile-current').replaceChildren(this.tabIcon(selected[2]),document.createTextNode(selected[1]));
+    this.$('mobile-options').replaceChildren(...tabs.map(([value,label,icon])=>{const option=document.createElement('button');option.setAttribute('aria-label',label);option.append(this.tabIcon(icon),document.createTextNode(label));if(this.view===value)option.setAttribute('aria-current','page');option.onclick=()=>{this.$('mobile-section').open=false;this.navigate(value);this.$('mobile-section').querySelector('summary').focus();};return option;}));
     this.$('tabs').replaceChildren(...tabs.map(([value,label,icon])=>{
       const b=document.createElement('button');b.append(this.tabIcon(icon),document.createTextNode(label));b.setAttribute('role','tab');b.setAttribute('aria-selected',String(this.view===value));
       b.onclick=()=>this.navigate(value);return b;
