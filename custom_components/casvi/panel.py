@@ -143,8 +143,7 @@ def summary(coordinator):
         "date": today,
         "events": [{"child": name, "child_id": child, "title": e.summary, "start": e.start.isoformat(), "description": e.description}
                    for child, name in coordinator.children.items()
-                   for e in calendar_events(data["agenda"].get(child, []))
-                   if e.start.date().isoformat() >= today],
+                   for e in calendar_events(data["agenda"].get(child, []))],
         "notifications": bool(coordinator.entry.options.get("notify_targets")),
     }
 

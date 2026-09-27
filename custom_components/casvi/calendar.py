@@ -26,7 +26,7 @@ def calendar_events(rows):
         end = start + timedelta(minutes=1)
         props = row.get("extendedProps") or {}
         result.append(CalendarEvent(
-            start=start, end=end, summary=plain_text(row.get("title")) or "Evento Casvi",
+            start=start, end=end, summary=plain_text(row.get("title")) or plain_text(props.get("tipo")) or "Evento Casvi",
             description=plain_text(props.get("texto") or props.get("descripcion")),
         ))
     return sorted(result, key=lambda event: event.start)

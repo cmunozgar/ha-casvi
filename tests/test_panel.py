@@ -395,3 +395,15 @@ def test_message_attachment_indicator_uses_inbox_metadata():
     assert message_summary(row(), {})['attachment_count'] == 0
     assert message_summary(row() | {'adjuntos': None}, {})['attachment_count'] == 0
     assert message_summary(row() | {'adjuntos': [{'nombre':'a.pdf'}, {'nombre':'b.png'}]}, {})['attachment_count'] == 2
+
+
+def test_overview_includes_past_events_and_child_identity():
+    from custom_components.casvi.panel import summary
+    coordinator = SimpleNamespace(entry=SimpleNamespace(entry_id='account',options={}),
+        children={'a':'Alumno A'},last_update_success=True,
+        data={'messages':[],'total':0,'menus':[], 'agenda':{'a':[
+            {'id':'1','start':'2020-09-01','title':'Anotación','extendedProps':{'texto':'Contenido del profesor'}}]}})
+    events=summary(coordinator)['events']
+    assert len(events)==1
+    assert events[0]['child_id']=='a'
+    assert events[0]['description']=='Contenido del profesor'

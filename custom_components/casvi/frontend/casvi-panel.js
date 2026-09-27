@@ -24,15 +24,21 @@ class CasviSchoolPanel extends HTMLElement {
       #mobile-section{display:none;position:relative}#mobile-section summary{display:flex;align-items:center;justify-content:space-between;gap:12px;list-style:none;cursor:pointer;border:1px solid var(--divider-color,#dce3e8);border-radius:12px;padding:12px 16px;background:var(--card-background-color,white);min-height:50px;box-shadow:0 2px 8px #10253506}#mobile-section summary::-webkit-details-marker{display:none}#mobile-current{display:flex;align-items:center;gap:12px;font-weight:600}#mobile-current svg{color:var(--primary-color,#12677b)}.section-chevron{color:var(--secondary-text-color,#526575);transition:transform .15s}#mobile-section[open] .section-chevron{transform:rotate(180deg)}#mobile-section[open] summary{border-color:var(--primary-color,#12677b)}#mobile-section summary:focus-visible{outline:3px solid #d79a25;outline-offset:3px}#mobile-options{position:absolute;top:calc(100% + 8px);left:0;right:0;z-index:20;padding:6px;background:var(--card-background-color,white);border:1px solid var(--divider-color,#dce3e8);border-radius:14px;box-shadow:0 12px 32px #10253522;max-height:60vh;overflow:auto}#mobile-options button{display:flex;align-items:center;gap:12px;width:100%;border:0;border-radius:9px;padding:12px;text-align:left;background:transparent}#mobile-options button[aria-current="page"]{background:var(--secondary-background-color,#e2f3f6);color:var(--primary-color,#12677b);font-weight:600}#mobile-options button[aria-current="page"]::after{content:'✓';margin-left:auto}#mobile-options button:hover{background:var(--secondary-background-color,#edf3f7)}@media(max-width:600px){.panel-navigation nav{display:none}#mobile-section{display:block;flex:1;min-width:0;width:100%}.panel-navigation{align-items:center;margin-bottom:24px}}
 
       .agenda-date{display:none}@media(max-width:600px){.month-scroll{overflow:visible}.month-grid{display:flex;flex-direction:column;min-width:0;gap:14px}.month-weekday,.month-day.empty-day{display:none}.month-day{min-height:0;padding:18px;scroll-margin-top:16px}.month-day p{font-size:16px;line-height:1.7;margin-top:12px}.month-day time{display:block;font-size:17px}.calendar-date{display:none}.agenda-date{display:inline}.month-day.today time{color:var(--primary-color,#12677b)}}
+      .events-grid{grid-template-columns:repeat(5,minmax(0,1fr));min-width:600px}.event-card{padding:12px 0;border-bottom:1px solid var(--divider-color,#dce3e8)}.event-card h3{font-size:15px;margin:5px 0}.event-card p{white-space:pre-line;line-height:1.6;margin:6px 0;font-size:14px}.event-card .recipient{font-weight:600}.event-card summary{cursor:pointer;font-weight:600}.event-card:last-child{border-bottom:0}#home-events-list{background:var(--card-background-color,white);border-radius:8px;padding:8px 18px}@media(max-width:600px){.events-grid{min-width:0}.events-grid .event-empty{display:none}.event-card h3{font-size:17px}.event-card p{font-size:16px}}
+      :host{--card-background-color:#fff;--primary-text-color:#203344;--secondary-text-color:#526575;--divider-color:#dce3e8;--secondary-background-color:#edf3f7;--primary-color:#12677b}#home-events,#content>section,#child-data,#teacher-section,#dining-view,#events-view{background:#fff;border:1px solid #e5ebef;border-radius:12px;padding:22px}#home-events-list{padding:0}#child-data,#teacher-section{margin-bottom:28px}.menu,.schedule-section,.teacher{border-radius:12px}.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:150px;padding:24px 16px;text-align:center;width:100%;grid-column:1/-1;color:#526575}.empty-state .empty-icon{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;background:#edf3f7;color:#12677b}.empty-state strong{color:#203344;font-size:16px;font-weight:600}.empty-state p{font-size:14px;line-height:1.5;margin:0;max-width:360px}.menu .empty-state{min-height:140px;padding:18px 0}.schedule-section .empty-state{min-height:100px;padding:16px 0}.row:last-child{border-bottom:0}@media(max-width:600px){#home-events,#content>section,#child-data,#teacher-section,#dining-view,#events-view{padding:18px}.empty-state{padding:22px 10px}}
+      button.event-card{display:block;width:100%;min-width:0;padding:12px 8px;border:0;border-bottom:1px solid var(--divider-color,#dce3e8);border-radius:6px;background:transparent;text-align:left}button.event-card:hover{background:var(--secondary-background-color,#edf3f7)}.event-title{display:block;font-size:15px;font-weight:600;margin:4px 0;overflow-wrap:anywhere}.event-card .excerpt{font-size:14px;line-height:1.45;margin-top:4px;-webkit-line-clamp:2}.event-card .recipient{margin-top:0;font-size:12px}
+      .student-tags{display:inline-flex;flex-wrap:wrap;gap:6px;vertical-align:middle}.student-tag{display:inline-flex;align-items:center;border-radius:6px;padding:3px 9px;font-size:12px;font-weight:600;line-height:1.5}.row>.student-tags{display:flex;margin-top:8px}#sender{display:flex;align-items:center;flex-wrap:wrap;gap:8px}.event-card>.student-tags{margin-bottom:4px}
+      .item-metadata{display:flex;align-items:center;flex-wrap:wrap;gap:6px 10px;margin:7px 0;color:var(--secondary-text-color,#526575);font-size:12px;line-height:1.5}.item-metadata time{white-space:nowrap}.row .subject,.event-card .subject{font-size:15px;line-height:1.4}.row .excerpt,.event-card .excerpt{font-size:14px;line-height:1.45;margin-top:6px}#sender>.item-metadata{margin:0}
       </style>
       <main>
         <select id="account" aria-label="Cuenta familiar" hidden></select>
         <div class="panel-navigation"><button id="sidebar-toggle" aria-label="Abrir menú lateral" title="Abrir menú lateral"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><details id="mobile-section"><summary aria-label="Elegir sección"><span id="mobile-current"></span><svg class="section-chevron" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><div id="mobile-options" aria-label="Secciones del colegio"></div></details><nav id="tabs" aria-label="Secciones del colegio" role="tablist"></nav></div><div id="error" role="status" class="error" hidden></div><div id="loading"></div>
-        <section id="meal-row" class="meal-row" aria-label="Menús del comedor" tabindex="0" hidden></section><div id="meal-controls" class="meal-controls" aria-label="Día del menú" hidden></div><div id="content" class="grid" hidden>
+        <section id="meal-row" class="meal-row" aria-label="Menús del comedor" tabindex="0" hidden></section><div id="meal-controls" class="meal-controls" aria-label="Día del menú" hidden></div><section id="home-events" hidden style="margin-bottom:28px"><h2 id="home-events-title">Últimos eventos</h2><div id="home-events-list"></div></section><div id="content" class="grid" hidden>
           <section><div class="toolbar"><h2 id="messages-title">Últimos mensajes</h2><button id="filter" aria-pressed="false">Solo pendientes</button></div><p id="count" class="hint"></p><div id="messages"></div><div id="pager" class="pager" hidden><button id="previous">Anterior</button><span id="page-label"></span><button id="next">Siguiente</button></div></section>
         </div>
         <section id="home-schedules" hidden><h2>Clases de hoy</h2><div id="home-schedule-cards" class="home-schedule-cards"></div></section>
         <section id="dining-view" hidden><div class="toolbar month-toolbar"><h2 id="month-title"></h2></div><div id="month-status" role="status"></div><div class="month-scroll"><div id="month-grid" class="month-grid"></div></div></section>
+<section id="events-view" hidden><div class="toolbar"><button id="events-prev" aria-label="Mes anterior">‹</button><h2 id="events-month" style="text-align:center"></h2><button id="events-next" aria-label="Mes siguiente">›</button></div><div id="events-info"></div><div class="month-scroll"><div id="events-grid" class="month-grid events-grid"></div></div></section>
         <section id="child-view" hidden><div class="child-heading"><h2 id="child-name"></h2><p id="child-group"></p><p id="child-tutor"></p><p id="child-status" role="status"></p></div><section id="schedule-section" class="schedule-section" hidden><h2>Horario semanal</h2><p id="schedule-note" class="hint"></p><div id="schedule-week-table" class="schedule-table week"></div></section><section id="teacher-section"><h2>Profesores</h2><div id="teachers" class="teachers"></div></section><section id="child-data"><h2>Compañeros de clase</h2><ol id="classmates" class="people"></ol></section></section>
         <dialog><div class="dialog-head"><h2 id="subject"></h2><button id="close" class="modal-close" aria-label="Cerrar mensaje" title="Cerrar"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div><p id="sender" class="hint"></p><div id="body" class="body" role="status"></div><div id="attachments"></div></dialog>
       </main>`;
@@ -44,6 +50,8 @@ class CasviSchoolPanel extends HTMLElement {
     this.$('meal-row').onscroll=()=>{if(!matchMedia('(max-width:600px)').matches)return;const row=this.$('meal-row');if(!row.clientWidth)return;this.mealIndex=Math.max(0,Math.min(2,Math.round(row.scrollLeft/(row.clientWidth+12))));this.updateMealControls();};
     this.$('meal-row').onkeydown=event=>{if(!matchMedia('(max-width:600px)').matches||!['ArrowLeft','ArrowRight'].includes(event.key))return;event.preventDefault();this.mealIndex=Math.max(0,Math.min(2,this.mealIndex+(event.key==='ArrowRight'?1:-1)));this.positionMeal(true);};
     this.mealResize=new ResizeObserver(()=>this.positionMeal());
+    this.$('events-prev').onclick=()=>this.changeEventsMonth(-1);
+    this.$('events-next').onclick=()=>this.changeEventsMonth(1);
     this.$('loading').append(this.loader('Cargando el colegio'));
     this.$('account').onchange = () => {this.page=null;this.profile=null;this.navigate('home');};
     this.$('previous').onclick=()=>this.loadPage(Math.max(0,this.offset-20));
@@ -51,6 +59,12 @@ class CasviSchoolPanel extends HTMLElement {
     this.$('filter').onclick = () => {this.onlyUnread = !this.onlyUnread; this.render();};
     this.shadowRoot.querySelector('dialog').addEventListener('close',()=>{this.requestId=(this.requestId||0)+1;this.clearPDF();});
     this.$('close').onclick = () => {this.requestId = (this.requestId || 0) + 1; this.shadowRoot.querySelector('dialog').close(); this.clearPDF();};
+  }
+  emptyState(icon,title,description=''){
+    const box=document.createElement('div');box.className='empty-state';
+    const badge=document.createElement('span');badge.className='empty-icon';badge.append(this.tabIcon(icon));
+    const heading=document.createElement('strong');heading.textContent=title;box.append(badge,heading);
+    if(description){const text=document.createElement('p');text.textContent=description;box.append(text);}return box;
   }
   loader(label){
     const status=document.createElement('span');status.className='loader';status.setAttribute('role','status');status.setAttribute('aria-label',label);
@@ -95,11 +109,15 @@ class CasviSchoolPanel extends HTMLElement {
     this.$('meal-controls').hidden=!a||this.view!=='home';
     this.$('home-schedules').hidden=!a||this.view!=='home';
     if(a&&this.view==='home')this.renderHomeSchedules(a);
-    this.$('content').hidden=!a || this.view.startsWith('child:') || this.view==='dining';
+    this.$('content').hidden=!a || this.view.startsWith('child:') || this.view==='dining' || this.view==='events';
+    this.$('events-view').hidden=!a||this.view!=='events';
+    this.$('home-events').hidden=!a||this.view!=='home';
+    if(a&&this.view==='home')this.renderLatestEvents(a);
     this.$('dining-view').hidden=!a||this.view!=='dining';
     this.$('child-view').hidden=!a || !this.view.startsWith('child:');
     if(!a){this.$('error').textContent='Añade tu cuenta en Ajustes → Dispositivos y servicios → Casvi.';this.$('error').hidden=false;return;}
     this.renderTabs(a);
+    if(this.view==='events'){this.renderEvents(a);return;}
     if(this.view==='dining')return;
     if(this.view.startsWith('child:')) {this.renderChild(a);return;}
     this.$('content').classList.add('inbox');
@@ -142,15 +160,25 @@ class CasviSchoolPanel extends HTMLElement {
       const article=document.createElement('article');article.className='menu'+(offset===0?' today':'');
       const label=document.createElement('div');label.className='date';label.textContent=date.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long',timeZone:'UTC'});
       const title=document.createElement('h2');title.textContent=titles[index];const content=document.createElement('p');content.textContent=menu||'No hay menú publicado para este día.';
-      article.append(label,title,content);return article;
+      article.append(label,title,menu?content:this.emptyState('dining','Sin menú publicado','El colegio todavía no ha publicado un menú para este día.'));return article;
     }));
     this.positionMeal();
   }
   currentAccount(){return this.accounts.find(a=>a.entry_id===this.$('account').value)||this.accounts[0];}
-  recipientLabel(m){return (m.children||[]).map(c=>c.name).join(', ')||'Destinatario no indicado por Casvi';}
+  studentTags(children,account=this.currentAccount()){
+    const tags=document.createElement('span');tags.className='student-tags';
+    for(const child of children||[]){
+      const known=account?.children?.find(c=>c.id===child.id)||child;
+      const identity=String(child.id||child.name||'');let hash=0;for(const char of identity)hash=(hash*31+char.charCodeAt(0))>>>0;
+      const colors=[['#e1f0fa','#185b80'],['#f0e6fa','#69418a'],['#e1f2e9','#256745'],['#fff0d8','#805215'],['#fbe5e9','#943e56'],['#dff2f2','#216464']];
+      const [background,color]=colors[hash%colors.length];
+      const tag=document.createElement('span');tag.className='student-tag';tag.style.background=background;tag.style.color=color;tag.textContent=this.childGivenName(known);tags.append(tag);
+    }
+    return tags;
+  }
   childGivenName(child){return child.given_name?.trim()||child.name?.trim().split(/\s+/)[0]||'Alumno';}
   renderTabs(a){
-    const tabs=[['home','Inicio','home'],['messages','Mensajes','mail'],['dining','Comedor','dining'],...(a.children||[]).map(c=>['child:'+c.id,this.childGivenName(c),'student'])];
+    const tabs=[['home','Inicio','home'],['messages','Mensajes','mail'],['dining','Comedor','dining'],['events','Eventos','calendar'],...(a.children||[]).map(c=>['child:'+c.id,this.childGivenName(c),'student'])];
     const selected=tabs.find(([value])=>value===this.view)||tabs[0];
     this.$('mobile-current').replaceChildren(this.tabIcon(selected[2]),document.createTextNode(selected[1]));
     this.$('mobile-options').replaceChildren(...tabs.map(([value,label,icon])=>{const option=document.createElement('button');option.setAttribute('aria-label',label);option.append(this.tabIcon(icon),document.createTextNode(label));if(this.view===value)option.setAttribute('aria-current','page');option.onclick=()=>{this.$('mobile-section').open=false;this.navigate(value);this.$('mobile-section').querySelector('summary').focus();};return option;}));
@@ -168,6 +196,64 @@ class CasviSchoolPanel extends HTMLElement {
     if(value==='dining')this.loadMenuMonth();
     else if(value==='messages')this.loadPage(0);
     else if(value.startsWith('child:'))this.loadChild();
+  }
+  itemMetadata(children,date,sender='',account=this.currentAccount()){
+    const metadata=document.createElement('span');metadata.className='item-metadata';
+    const tags=this.studentTags(children,account);
+    if(tags.childElementCount)metadata.append(tags);
+    if(sender){const author=document.createElement('span');author.className='item-author';author.textContent=sender;metadata.append(author);}
+    if(date){const time=document.createElement('time');time.dateTime=date;time.textContent=this.messageDate(date);metadata.append(time);}
+    return metadata;
+  }
+  eventCard(event){
+    const card=document.createElement('button');card.className='event-card';card.type='button';
+    const title=document.createElement('span');title.className='subject';title.textContent=event.title&&event.title!=='Evento Casvi'?event.title:'Evento';
+    card.append(title,this.itemMetadata([{id:event.child_id,name:event.child}],event.start));
+    const excerpt=document.createElement('span');excerpt.className='excerpt';excerpt.textContent=(event.description||'Pulsa para ver el evento.').replace(/\s+/g,' ').trim();card.append(excerpt);
+    card.onclick=()=>this.openEvent(event);return card;
+  }
+  openEvent(event){
+    this.requestId=(this.requestId||0)+1;this.clearPDF();
+    this.$('subject').textContent=event.title&&event.title!=='Evento Casvi'?event.title:'Detalle del evento';
+    this.$('sender').replaceChildren(this.itemMetadata([{id:event.child_id,name:event.child}],event.start));
+    this.renderMessageBody(event.description||'Este evento no contiene más información.');
+    this.$('attachments').replaceChildren();
+    this.$('close').setAttribute('aria-label','Cerrar evento');
+    const dialog=this.shadowRoot.querySelector('dialog');if(!dialog.open)dialog.showModal();
+  }
+  renderLatestEvents(account){
+    const events=(account.events||[]).filter(e=>this.eventDate(e.start)<=account.date);
+    const latest=events.map(e=>this.eventDate(e.start)).sort().at(-1);
+    this.$('home-events-title').textContent=latest?'Eventos · '+new Intl.DateTimeFormat('es-ES',{weekday:'long',day:'numeric',month:'long',timeZone:'UTC'}).format(new Date(latest+'T12:00:00Z')):'Últimos eventos';
+    const list=this.$('home-events-list');list.replaceChildren(...events.filter(e=>this.eventDate(e.start)===latest).map(e=>this.eventCard(e)));
+    if(!latest)list.append(this.emptyState('calendar','Sin eventos recientes','Aquí aparecerán las anotaciones de los profesores.'));
+  }
+  changeEventsMonth(offset){
+    const account=this.currentAccount();if(!account)return;
+    const [year,month]=(this.eventsMonth||account.date.slice(0,7)).split('-').map(Number);
+    const date=new Date(Date.UTC(year,month-1+offset,1));this.eventsMonth=date.toISOString().slice(0,7);this.eventsSignature=null;this.renderEvents(account);
+  }
+  renderEvents(account){
+    const month=this.eventsMonth||account.date.slice(0,7);
+    const signature=JSON.stringify([account.entry_id,month,account.events]);if(signature===this.eventsSignature)return;this.eventsSignature=signature;
+    const [year,m]=month.split('-').map(Number);const date=new Date(Date.UTC(year,m-1,1));
+    this.$('events-month').textContent=new Intl.DateTimeFormat('es-ES',{month:'long',year:'numeric',timeZone:'UTC'}).format(date);
+    const events=(account.events||[]).filter(e=>this.eventDate(e.start).startsWith(month)).sort((a,b)=>a.start.localeCompare(b.start));
+    this.$('events-info').replaceChildren(...(events.length?[]:[this.emptyState('calendar','Sin eventos este mes','No hay anotaciones para este mes entre los eventos recibidos.')]));
+    const grid=this.$('events-grid');grid.replaceChildren();
+    for(const day of ['Lunes','Martes','Miércoles','Jueves','Viernes']){const cell=document.createElement('div');cell.className='month-weekday';cell.textContent=day;grid.append(cell);}
+    const offset=(date.getUTCDay()+6)%7,days=new Date(Date.UTC(year,m,0)).getUTCDate();
+    for(let slot=0;slot<Math.ceil((offset+days)/7)*7;slot++){
+      if(slot%7>=5)continue;
+      const day=slot-offset+1,cell=document.createElement('section');cell.className='month-day';
+      if(day<1||day>days){cell.classList.add('empty-day');grid.append(cell);continue;}
+      const key=month+'-'+String(day).padStart(2,'0'),rows=events.filter(e=>this.eventDate(e.start)===key);
+      if(!rows.length)cell.classList.add('event-empty');if(key===account.date)cell.classList.add('today');
+      const time=document.createElement('time');time.dateTime=key;
+      const number=document.createElement('span');number.className='calendar-date';number.textContent=day;
+      const label=document.createElement('span');label.className='agenda-date';label.textContent=new Intl.DateTimeFormat('es-ES',{weekday:'long',day:'numeric',month:'long',timeZone:'UTC'}).format(new Date(key+'T12:00:00Z'));
+      time.append(number,label);cell.append(time,...rows.map(e=>this.eventCard(e)));grid.append(cell);
+    }
   }
   async loadMenuMonth(){
     const account=this.currentAccount();if(!account)return;
@@ -203,7 +289,7 @@ class CasviSchoolPanel extends HTMLElement {
     }catch(_){if(request===this.menuRequest){this.$('month-status').textContent='No se pudo cargar el menú. ';const retry=document.createElement('button');retry.textContent='Reintentar';retry.onclick=()=>this.loadMenuMonth();this.$('month-status').append(retry);}}
   }
   tabIcon(name){
-    const paths={attachment:'M21 11l-9 9a6 6 0 0 1-8-8l10-10a4 4 0 0 1 6 6L10 18a2 2 0 0 1-3-3l9-9',dining:'M4 3v6q0 3 3 3V3 M4 7h6V3 M7 12v9 M19 3q-5 5-3 10h3 M19 3v18',pool:'M2 17q2-2 4 0t4 0t4 0t4 0t4 0 M2 21q2-2 4 0t4 0t4 0t4 0t4 0 M5 13l5-5 5 4 4 1 M10 8 7 5 3 7 M17 6a2 2 0 1 0 4 0a2 2 0 1 0-4 0',physical:'M13 4a2 2 0 1 0 4 0a2 2 0 1 0-4 0 M8 10l4-3 4 4 4 1 M12 7l-2 7 5 3-1 5 M10 14l-3 5H3',home:'M3 10 12 3 21 10 M5 9v12h5v-7h4v7h5V9',mail:'M3 5h18v14H3z M3 5l9 7 9-7',student:'M2 8l10-5 10 5-10 5z M6 10v6c3 3 9 3 12 0v-6 M22 8v7'};
+    const paths={calendar:'M4 5h16v16H4z M4 10h16 M8 3v4 M16 3v4',attachment:'M21 11l-9 9a6 6 0 0 1-8-8l10-10a4 4 0 0 1 6 6L10 18a2 2 0 0 1-3-3l9-9',dining:'M4 3v6q0 3 3 3V3 M4 7h6V3 M7 12v9 M19 3q-5 5-3 10h3 M19 3v18',pool:'M2 17q2-2 4 0t4 0t4 0t4 0t4 0 M2 21q2-2 4 0t4 0t4 0t4 0t4 0 M5 13l5-5 5 4 4 1 M10 8 7 5 3 7 M17 6a2 2 0 1 0 4 0a2 2 0 1 0-4 0',physical:'M13 4a2 2 0 1 0 4 0a2 2 0 1 0-4 0 M8 10l4-3 4 4 4 1 M12 7l-2 7 5 3-1 5 M10 14l-3 5H3',home:'M3 10 12 3 21 10 M5 9v12h5v-7h4v7h5V9',mail:'M3 5h18v14H3z M3 5l9 7 9-7',student:'M2 8l10-5 10 5-10 5z M6 10v6c3 3 9 3 12 0v-6 M22 8v7'};
     const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
     for(const [key,value] of Object.entries({viewBox:'0 0 24 24',width:'20',height:'20',fill:'none',stroke:'currentColor','stroke-width':'1.7','stroke-linecap':'round','stroke-linejoin':'round','aria-hidden':'true'}))svg.setAttribute(key,value);
     const path=document.createElementNS(svg.namespaceURI,'path');path.setAttribute('d',paths[name]);svg.append(path);return svg;
@@ -215,12 +301,10 @@ class CasviSchoolPanel extends HTMLElement {
       if(!m.read){const badge=document.createElement('span');badge.className='badge';badge.textContent='Pendiente';b.append(badge);}
       const title=document.createElement('span');title.className='subject';title.textContent=m.subject||'Sin asunto';
       if(m.attachment_count>0){const indicator=document.createElement('span');indicator.style.cssText='display:inline-flex;vertical-align:middle;margin-left:8px';const label=m.attachment_count===1?'1 archivo adjunto':`${m.attachment_count} archivos adjuntos`;indicator.title=label;indicator.setAttribute('role','img');indicator.setAttribute('aria-label',label);indicator.append(this.tabIcon('attachment'));title.append(indicator);}
-      const meta=document.createElement('span');meta.className='meta';meta.textContent=`${m.sender} · ${m.date.slice(0,16)}`;
-      const recipient=document.createElement('span');recipient.className='recipient';recipient.textContent=this.recipientLabel(m);
       const excerpt=document.createElement('span');excerpt.className='excerpt';excerpt.textContent=m.excerpt||'Abrir para ver el contenido';
-      b.append(title,excerpt,meta,recipient);b.onclick=()=>this.openMessage(a.entry_id,m.id,m.id_para);container.append(b);
+      b.append(title,this.itemMetadata(m.children,m.date,m.sender,a),excerpt);b.onclick=()=>this.openMessage(a.entry_id,m.id,m.id_para);container.append(b);
     });
-    if(!rows.length){const empty=document.createElement('p');empty.className='empty';if(this.pageLoading)empty.append(this.loader('Cargando mensajes'));else empty.textContent=this.view==='home'?'No hay mensajes no leídos entre los consultados.':'No hay mensajes en esta vista.';container.append(empty);}
+    if(!rows.length)container.append(this.pageLoading?this.loader('Cargando mensajes'):this.emptyState('mail',this.view==='home'?'No tienes mensajes pendientes':'Sin mensajes',this.view==='home'?'Todos los mensajes consultados están leídos.':'Los mensajes aparecerán aquí cuando estén disponibles.'));
   }
   async loadPage(offset){
     const a=this.currentAccount();if(!a)return;
@@ -248,7 +332,7 @@ class CasviSchoolPanel extends HTMLElement {
     this.$('child-name').textContent=child?.name||'Alumno';this.$('child-status').replaceChildren();if(this.childLoading)this.$('child-status').append(this.loader('Cargando la ficha'));else this.$('child-status').textContent=p?'':'La ficha todavía no está disponible.';
     this.$('child-group').textContent=p?.group||'';this.$('child-tutor').textContent=p?.tutor?'Tutor: '+p.tutor:'';this.$('schedule-section').hidden=!p;this.renderSchedule(p);this.$('child-data').hidden=!p;this.$('teacher-section').hidden=!p;if(!p)return;this.renderTeachers(p);
     this.$('classmates').replaceChildren(...p.classmates.map(name=>{const li=document.createElement('li');li.textContent=name;return li;}));
-    if(!p.classmates.length)this.$('classmates').textContent='No hay compañeros disponibles.';
+    if(!p.classmates.length){const item=document.createElement('li');item.style.cssText='list-style:none;grid-column:1/-1';item.append(this.emptyState('student','Sin compañeros disponibles','El colegio aún no ha publicado la lista del grupo.'));this.$('classmates').append(item);}
   }
   async loadSchedule(entry,child,profile,request,guard=null,update=null){
     const current=guard||(()=>request===this.childRequest&&this.profile===profile&&this.view==='child:'+child&&this.currentAccount()?.entry_id===entry);
@@ -307,7 +391,7 @@ class CasviSchoolPanel extends HTMLElement {
       else if(/primaria|secundaria|\beso\b|bachiller/i.test(profile.group||''))labels.push(['Educación física',day.physical,day.combined,'physical']);
       for(const [label,yes,uncertain,icon] of labels){const badge=document.createElement('span');if(icon)badge.append(this.tabIcon(icon));badge.append(document.createTextNode(label+': '+(yes?'Sí':uncertain?'EF/NAT · por confirmar':'No')));if(yes||uncertain)badge.className='active';flags.append(badge);}card.append(flags);
       if(day.rows.length){const wrapper=document.createElement('div');wrapper.className='schedule-table';wrapper.append(this.scheduleTable(['Hora','Clase'],day.rows.map(r=>[r.start+'–'+r.end,r.subject])));card.append(wrapper);}
-      else{const empty=document.createElement('p');empty.textContent='Hoy no hay clases en el horario semanal.';card.append(empty);}
+      else card.append(this.emptyState('calendar','Hoy no hay clases','No hay clases previstas en el horario semanal.'));
       return card;
     }));
   }
@@ -347,7 +431,7 @@ class CasviSchoolPanel extends HTMLElement {
       else if(teacher.photoState==='missing')portrait.textContent='Sin foto';else portrait.append(this.loader('Cargando foto'));
       const details=document.createElement('div');details.className='teacher-details';const name=document.createElement('h3');name.textContent=this.teacherDisplayName(teacher.name);const assignment=document.createElement('p');assignment.textContent=subject;details.append(name,assignment);card.append(portrait,details);container.append(card);
     }
-    if(!(profile.teachers||[]).length)container.textContent=profile.teachers_available===false?'No se pudieron cargar los profesores. Vuelve a pulsar la pestaña para reintentar.':'Casvi no ha publicado profesores para este grupo.';
+    if(!(profile.teachers||[]).length){if(profile.teachers_available===false){const error=document.createElement('p');error.className='error';error.textContent='No se pudieron cargar los profesores. Vuelve a entrar en la ficha para reintentar.';container.append(error);}else container.append(this.emptyState('student','Sin profesores disponibles','El colegio aún no ha publicado los profesores del grupo.'));}
   }
   async loadTeacherPhotos(entry,child,profile,request){
     const queue=[...(profile.teachers||[])];
@@ -468,6 +552,7 @@ class CasviSchoolPanel extends HTMLElement {
     }
   }
   async openMessage(entry,id,recipient) {
+    this.$('close').setAttribute('aria-label','Cerrar mensaje');
     const request=this.requestId=(this.requestId||0)+1;
     this.clearPDF();
     this.$('subject').textContent='Mensaje';this.$('sender').textContent='';this.$('body').replaceChildren(this.loader('Cargando mensaje'));this.$('attachments').replaceChildren();
@@ -479,8 +564,7 @@ class CasviSchoolPanel extends HTMLElement {
       if(this.currentAccount()?.entry_id===entry)for(const row of this.page?.messages||[])if(row.id===id&&row.id_para===recipient){row.excerpt=m.excerpt;if(m.read)row.read=true;}
       this.render();
       this.$('subject').textContent=m.subject;const sourceDate=m.date||this.accounts.find(a=>a.entry_id===entry)?.messages.find(row=>row.id===id&&row.id_para===recipient)?.date||this.page?.messages.find(row=>row.id===id&&row.id_para===recipient)?.date;
-      const dateLabel=this.messageDate(sourceDate);
-      this.$('sender').textContent=[m.sender,this.recipientLabel(m),dateLabel].filter(Boolean).join(' · ');this.renderMessageBody(m.content,m.content_nodes);
+      this.$('sender').replaceChildren(this.itemMetadata(m.children,sourceDate,m.sender,this.accounts.find(a=>a.entry_id===entry))); this.renderMessageBody(m.content,m.content_nodes);
       if(m.read===false){const warning=document.createElement('p');warning.className='error';warning.textContent='El mensaje se ha abierto, pero Casvi no ha confirmado que quede leído. Vuelve a abrirlo para reintentar.';this.$('body').append(warning);}
       this.renderAttachments(m.attachments||[],entry,id,recipient,request);
     } catch (_) {if(request===this.requestId)this.$('body').textContent='No se pudo abrir el mensaje. Puede haber salido de la lista reciente. Inténtalo de nuevo o entra en la intranet.';}

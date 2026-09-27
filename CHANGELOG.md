@@ -1,5 +1,18 @@
 # Cambios
 
+## 0.6.0
+
+- Nueva sección Eventos: calendario mensual de lunes a viernes en escritorio y agenda diaria en móvil.
+- Inicio muestra los eventos del último día con anotaciones hasta hoy, antes de los mensajes.
+- Eventos compactos con vista previa y contenido completo en una modal.
+- Título real o tipo de evento, fecha y hora; se recuperan también los eventos pasados que devuelve Casvi.
+- Etiquetas de color con el nombre de cada alumno en mensajes y eventos, incluidos los detalles.
+- Estructura visual compartida para eventos y mensajes, sin huecos cuando no hay alumno asociado.
+- Paneles blancos y estados vacíos con iconos y textos claros.
+- Validación: 64 pruebas Python y 3 pruebas JavaScript, además de comprobaciones locales con datos reales.
+
+Después de actualizar en HACS, reinicia Home Assistant y recarga el panel.
+
 ## 0.5.2
 
 - Comedor en formato agenda diaria en móvil, conservando el calendario mensual en escritorio.
