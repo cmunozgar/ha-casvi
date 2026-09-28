@@ -41,7 +41,11 @@ class CasviSensor(CoordinatorEntity, SensorEntity):
             return sum(str(m.get("leido")) == "0" for m in data["messages"])
         if self.key == "latest":
             return plain_text(data["messages"][0].get("asunto"))[:250] if data["messages"] else "Sin mensajes"
-        return "Disponible" if self._menu() else "Sin menú publicado"
+        menu = self._menu()
+        text = " ".join(plain_text(menu.get("menu")).split()) if menu else ""
+        if not text:
+            return "Sin menú publicado"
+        return text if len(text) <= 255 else text[:254].rstrip() + "…"
 
     @property
     def extra_state_attributes(self):

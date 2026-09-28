@@ -45,7 +45,9 @@ Las secciones aparecen en este orden:
 
 ### Mensajes y eventos
 
-Las tarjetas comparten estructura: título, etiquetas de alumnos y fecha/hora, seguidos de una vista previa de dos líneas. Los mensajes incluyen el remitente y un clip si tienen adjuntos. Cada alumno se identifica con una etiqueta de color y solo su nombre; el color se mantiene entre vistas. Si Casvi no indica alumno, no se deduce del asunto ni se reserva un hueco para la etiqueta.
+Las tarjetas del comedor y de clases tienen bordes completos y esquinas redondeadas.
+
+Las tarjetas de eventos y mensajes comparten estructura: título, etiquetas de alumnos y fecha/hora, seguidos de una vista previa de dos líneas. Los mensajes incluyen el remitente y un clip si tienen adjuntos. Cada alumno se identifica con una etiqueta de color y solo su nombre; el color se mantiene entre vistas. Si Casvi no indica alumno, no se deduce del asunto ni se reserva un hueco para la etiqueta.
 
 Al pulsar una tarjeta se abre una modal con el contenido completo, fecha y alumnos. Los enlaces se abren en otra pestaña. Los mensajes conservan párrafos, saltos, listas y formato permitido, omitiendo contenido oculto y HTML activo.
 
@@ -55,7 +57,7 @@ Los adjuntos PDF e imágenes se descargan con la sesión de la integración y se
 
 ### Eventos
 
-La pestaña **Eventos** muestra un calendario mensual de lunes a viernes en escritorio y una agenda por días con eventos en móvil. Permite cambiar de mes dentro de los datos recibidos de Casvi. Las tarjetas compactas abren el detalle en una modal.
+La pestaña **Eventos** muestra un calendario mensual de lunes a viernes en escritorio y una agenda por días con eventos en móvil, ordenada del más reciente al más antiguo (también dentro de cada día). Permite cambiar de mes dentro de los datos recibidos de Casvi. Las tarjetas compactas abren el detalle en una modal.
 
 Se usa el título del evento o, si está vacío, su tipo, como «Actividades» u «Otros», junto con la fecha y hora. Se incluyen los eventos pasados que devuelve la intranet. No se garantiza un histórico completo ni se solicitan meses adicionales mediante una API de histórico. La vista de calendario omite sábado y domingo.
 
@@ -105,7 +107,7 @@ Los horarios son los habituales: no descuentan festivos, vacaciones ni cambios p
 ## Entidades
 
 - Calendario de agenda por hijo, con los eventos que devuelve la intranet.
-- Sensor de comedor de hoy. Su estado indica disponibilidad; el atributo `menu` contiene el texto.
+- Sensor de comedor de hoy. Su estado muestra el texto del menú en una línea, abreviado a 255 caracteres si es necesario; el atributo `menu` conserva el texto completo y `fecha` indica el día. Si no hay menú para hoy, muestra «Sin menú publicado».
 - Total de mensajes recibidos.
 - Número de mensajes no leídos **entre los últimos 50**. No es el total de pendientes de todo el buzón. Los atributos indican el tamaño de la muestra.
 - Dos sensores binarios por hijo: **Piscina hoy** y **Educación física hoy** (incluye psicomotricidad). Si falta el horario no están disponibles; `EF/NAT` queda desconocido salvo que otra franja confirme la actividad. Los fines de semana quedan desactivados.
