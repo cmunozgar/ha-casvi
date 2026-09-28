@@ -1,11 +1,20 @@
 # Cambios
 
-## 0.6.2
+## 0.6.3
 
 - La entidad del comedor muestra el texto del menú de hoy en su estado; conserva el contenido completo en el atributo `menu`.
 - Bordes completos y esquinas uniformes en las tarjetas del comedor, clases y horario semanal.
 - Agenda de eventos en móvil ordenada del más reciente al más antiguo, también dentro de cada día. El calendario de escritorio mantiene su orden habitual.
-- Validación: 66 pruebas Python y 3 pruebas JavaScript superadas.
+- Validación: 67 pruebas Python y 3 pruebas JavaScript superadas.
+
+Después de actualizar en HACS, reinicia Home Assistant y recarga el panel.
+
+## 0.6.2
+
+- Compatibilidad completa del panel con los temas oscuros de Home Assistant.
+- Tarjetas, textos, bordes, navegación, acentos y estados vacíos heredan ahora la paleta del tema activo.
+- Se mantienen valores de respaldo para temas que no definan todas las variables visuales.
+- Añade una prueba de regresión para evitar que vuelvan a introducirse colores claros fijos.
 
 Después de actualizar en HACS, reinicia Home Assistant y recarga el panel.
 
