@@ -1,5 +1,15 @@
 # Cambios
 
+## 0.6.4
+
+- EF/NAT se interpreta como natación en el panel y los sensores.
+- Nuevas entidades Piscina mañana y Educación física mañana por alumno; educación física incluye psicomotricidad.
+- Resumen «Para mañana» en las tarjetas de clases de Inicio para preparar la mochila.
+- Mañana corresponde al día natural siguiente; los fines de semana no hay actividades. Se utiliza el horario habitual, sin descontar festivos.
+- Validación: 69 pruebas Python y 3 JavaScript superadas.
+
+Actualiza en HACS, reinicia Home Assistant y recarga el panel.
+
 ## 0.6.3
 
 - La entidad del comedor muestra el texto del menú de hoy en su estado; conserva el contenido completo en el atributo `menu`.

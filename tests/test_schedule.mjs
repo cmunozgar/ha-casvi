@@ -24,11 +24,11 @@ test('Extracts five columns and ignores staff names in split time template',()=>
   assert.ok(result.rows.every(r=>r.subjects.every(s=>!s.includes('Docente'))));
  }
 });
-test('Mixed EF/NAT is uncertain, weekends empty and psychomotor separate',()=>{
+test('EF/NAT means swimming, weekends empty and psychomotor separate',()=>{
  const schedule=parseSchedule(fixture());
  assert.equal(daySchedule(schedule,1).swimming,true);
  const friday=daySchedule(schedule,4);
- assert.equal(friday.combined,true);assert.equal(friday.swimming,false);assert.equal(friday.physical,false);assert.equal(friday.psychomotor,true);
+ assert.equal(friday.combined,false);assert.equal(friday.swimming,true);assert.equal(friday.physical,false);assert.equal(friday.psychomotor,true);
  assert.equal(daySchedule(schedule,5).rows.length,0);
 });
 test('Missing weekdays and cells fail closed',()=>{

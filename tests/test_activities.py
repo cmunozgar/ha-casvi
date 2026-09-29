@@ -10,7 +10,7 @@ def rows(subject):
     return [{'subjects':[subject]*5}]
 
 
-@pytest.mark.parametrize('subject,pool,pe', [('NATACIÓN',True,False),('PSICOMOTRICIDAD',False,True),('E. FÍSICA',False,True),('EF/NAT',None,None),('LENGUA',False,False)])
+@pytest.mark.parametrize('subject,pool,pe', [('NATACIÓN',True,False),('PSICOMOTRICIDAD',False,True),('E. FÍSICA',False,True),('EF/NAT',True,False),('EF / NAT',True,False),('LENGUA',False,False)])
 def test_activity_mapping(subject,pool,pe):
     assert activity_today(rows(subject),date(2026,9,28),'pool') is pool
     assert activity_today(rows(subject),date(2026,9,28),'pe') is pe
@@ -58,3 +58,27 @@ async def test_persistent_schedule_survives_restart_and_reparses_only_on_force()
         assert client.read_document.await_count==2
         client.child_profile.side_effect=OSError('offline')
         assert (await second.read('a',date(2026,9,30)))['rows']==rows('PSICOMOTRICIDAD')
+
+
+def test_tomorrow_uses_next_calendar_day(monkeypatch):
+    import custom_components.casvi.binary_sensor as module
+    from datetime import datetime
+    class Friday(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return cls(2026, 10, 2, 18, tzinfo=tz)
+    monkeypatch.setattr(module, 'datetime', Friday)
+    c=SimpleNamespace(entry=SimpleNamespace(entry_id='account'),last_update_success=True,data={'schedules':{'a':{'rows':rows('EF/NAT')}}})
+    today=CasviActivity(c,'a','Child','pool')
+    tomorrow=CasviActivity(c,'a','Child','pool',1)
+    assert today.is_on is True
+    assert tomorrow.is_on is False
+    assert tomorrow.extra_state_attributes['fecha']=='2026-10-03'
+    assert today.unique_id != tomorrow.unique_id
+    class Sunday(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return cls(2026, 10, 4, 18, tzinfo=tz)
+    monkeypatch.setattr(module, 'datetime', Sunday)
+    assert tomorrow.is_on is True
+    assert tomorrow.extra_state_attributes['fecha']=='2026-10-05'

@@ -102,7 +102,7 @@ El horario se comprueba diariamente usando la ficha en caché; el PDF se reutili
 | `casvi.refresh_schedules` | Invalida la caché de fichas y fuerza una nueva descarga y lectura de los horarios. |
 | `casvi.refresh_school_data` | Renueva las fichas escolares y vuelve a cargar los horarios. |
 
-Los horarios son los habituales: no descuentan festivos, vacaciones ni cambios puntuales. `EF/NAT` se conserva como actividad ambigua. Al eliminar la cuenta de la integración se borran sus cachés persistentes y el historial de identificadores de avisos.
+Los horarios son los habituales: no descuentan festivos, vacaciones ni cambios puntuales. `EF/NAT` se interpreta como natación. Al eliminar la cuenta de la integración se borran sus cachés persistentes y el historial de identificadores de avisos.
 
 ## Entidades
 
@@ -110,7 +110,7 @@ Los horarios son los habituales: no descuentan festivos, vacaciones ni cambios p
 - Sensor de comedor de hoy. Su estado muestra el texto del menú en una línea, abreviado a 255 caracteres si es necesario; el atributo `menu` conserva el texto completo y `fecha` indica el día. Si no hay menú para hoy, muestra «Sin menú publicado».
 - Total de mensajes recibidos.
 - Número de mensajes no leídos **entre los últimos 50**. No es el total de pendientes de todo el buzón. Los atributos indican el tamaño de la muestra.
-- Dos sensores binarios por hijo: **Piscina hoy** y **Educación física hoy** (incluye psicomotricidad). Si falta el horario no están disponibles; `EF/NAT` queda desconocido salvo que otra franja confirme la actividad. Los fines de semana quedan desactivados.
+- Cuatro sensores binarios por hijo: **Piscina hoy**, **Educación física hoy**, **Piscina mañana** y **Educación física mañana** (incluye psicomotricidad). Inicio incluye un resumen «Para mañana» para preparar la mochila. Si falta el horario no están disponibles; `EF/NAT` activa Piscina hoy; Educación física hoy solo se activa si hay otra franja de educación física o psicomotricidad. Los fines de semana quedan desactivados.
 - Tres sensores de mensajes pendientes recientes para widgets y, por alumno, un contador y el último pendiente.
 - Último mensaje: asunto, remitente, fecha, estado de lectura y nombres de adjuntos. El contenido completo se obtiene únicamente si ya está leído; si está pendiente, `contenido_disponible` será falso.
 

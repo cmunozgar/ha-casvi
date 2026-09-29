@@ -11,18 +11,22 @@ TZ = ZoneInfo('Europe/Madrid')
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
-    async_add_entities(CasviActivity(entry.runtime_data, child, name, activity)
+    async_add_entities(CasviActivity(entry.runtime_data, child, name, activity, day_offset)
                        for child,name in entry.runtime_data.children.items()
-                       for activity in ('pool','pe'))
+                       for activity in ('pool','pe')
+                       for day_offset in (0,1))
 
 
 class CasviActivity(CoordinatorEntity, BinarySensorEntity):
-    def __init__(self, coordinator, child, name, activity):
+    def __init__(self, coordinator, child, name, activity, day_offset=0):
         super().__init__(coordinator)
         self.child, self.activity = child, activity
-        self._attr_unique_id = f'{coordinator.entry.entry_id}_{child}_{activity}_today'
+        self.day_offset = day_offset
+        suffix = "tomorrow" if day_offset else "today"
+        day_label = "mañana" if day_offset else "hoy"
+        self._attr_unique_id = f'{coordinator.entry.entry_id}_{child}_{activity}_{suffix}'
         label = 'Piscina' if activity == 'pool' else 'Educación física'
-        self._attr_name = f'Casvi {name} {label} hoy'
+        self._attr_name = f'Casvi {name} {label} {day_label}'
         self._attr_icon = 'mdi:swim' if activity == 'pool' else 'mdi:run'
 
     def _schedule(self):
@@ -35,15 +39,15 @@ class CasviActivity(CoordinatorEntity, BinarySensorEntity):
     @property
     def is_on(self):
         schedule = self._schedule()
-        return activity_today(schedule['rows'], datetime.now(TZ).date(), self.activity) if schedule else None
+        return activity_today(schedule['rows'], datetime.now(TZ).date() + timedelta(days=self.day_offset), self.activity) if schedule else None
 
     @property
     def extra_state_attributes(self):
         schedule = self._schedule()
-        return {'fecha':datetime.now(TZ).date().isoformat(), 'origen':'Horario semanal del PDF',
+        return {'fecha':(datetime.now(TZ).date() + timedelta(days=self.day_offset)).isoformat(), 'origen':'Horario semanal del PDF',
                 'incluye_psicomotricidad':self.activity == 'pe',
                 'estado_detalle': 'Horario no disponible' if schedule is None else
-                    'EF/NAT: actividad por confirmar' if self.is_on is None else 'Horario habitual',
+                    'Horario habitual',
                 'calendario_lectivo_aplicado':False}
 
     async def async_added_to_hass(self):

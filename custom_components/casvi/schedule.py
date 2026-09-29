@@ -47,11 +47,9 @@ def activity_today(rows, today: date, activity):
     if today.weekday() >= 5:
         return False
     subjects = [normalized(row['subjects'][today.weekday()]) for row in rows]
-    pattern = r'natacion|piscina' if activity == 'pool' else r'e\.?\s*fisica|educacion fisica|psicomotricidad'
+    pattern = r'natacion|piscina|\bef\s*/\s*nat\b' if activity == 'pool' else r'e\.?\s*fisica|educacion fisica|psicomotricidad'
     if any(re.search(pattern, subject) for subject in subjects):
         return True
-    if any(re.search(r'\bef\s*/\s*nat\b', subject) for subject in subjects):
-        return None
     return False
 
 

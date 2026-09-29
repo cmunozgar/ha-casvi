@@ -49,6 +49,6 @@ export function parseSchedule(items){
 export function daySchedule(schedule,weekday){
   const rows=weekday>=0&&weekday<5?schedule.rows.map(r=>({start:r.start,end:r.end,subject:r.subjects[weekday]})):[];
   const subjects=rows.map(r=>normalize(r.subject));
-  const combined=subjects.some(s=>/\bef\s*\/\s*nat\b/.test(s));
-  return {rows,swimming:subjects.some(s=>/natacion|piscina/.test(s)),physical:subjects.some(s=>/e\.?\s*fisica|educacion fisica|gimnasia/.test(s)),psychomotor:subjects.some(s=>/psicomotricidad/.test(s)),combined};
+  const combined=false;
+  return {rows,swimming:subjects.some(s=>/natacion|piscina|\bef\s*\/\s*nat\b/.test(s)),physical:subjects.some(s=>/e\.?\s*fisica|educacion fisica|gimnasia/.test(s)),psychomotor:subjects.some(s=>/psicomotricidad/.test(s)),combined};
 }

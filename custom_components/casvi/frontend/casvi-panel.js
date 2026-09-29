@@ -394,6 +394,10 @@ class CasviSchoolPanel extends HTMLElement {
       if(/infantil/i.test(profile.group||''))labels.push(['Psicomotricidad',day.psychomotor,false,'physical']);
       else if(/primaria|secundaria|\beso\b|bachiller/i.test(profile.group||''))labels.push(['Educación física',day.physical,day.combined,'physical']);
       for(const [label,yes,uncertain,icon] of labels){const badge=document.createElement('span');if(icon)badge.append(this.tabIcon(icon));badge.append(document.createTextNode(label+': '+(yes?'Sí':uncertain?'EF/NAT · por confirmar':'No')));if(yes||uncertain)badge.className='active';flags.append(badge);}card.append(flags);
+      const tomorrow=this.scheduleParser.daySchedule(profile.schedule,(weekday+1)%7);
+      const tomorrowTitle=document.createElement('h4');tomorrowTitle.textContent='Para mañana';card.append(tomorrowTitle);
+      const tomorrowFlags=document.createElement('div');tomorrowFlags.className='schedule-status';
+      for(const [label,yes,icon] of [['Piscina',tomorrow.swimming,'pool'],['Educación física',tomorrow.physical||tomorrow.psychomotor,'physical']]){const badge=document.createElement('span');badge.append(this.tabIcon(icon),document.createTextNode(label+': '+(yes?'Sí':'No')));if(yes)badge.className='active';tomorrowFlags.append(badge);}card.append(tomorrowFlags);
       if(day.rows.length){const wrapper=document.createElement('div');wrapper.className='schedule-table';wrapper.append(this.scheduleTable(['Hora','Clase'],day.rows.map(r=>[r.start+'–'+r.end,r.subject])));card.append(wrapper);}
       else card.append(this.emptyState('calendar','Hoy no hay clases','No hay clases previstas en el horario semanal.'));
       return card;
