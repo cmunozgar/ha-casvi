@@ -68,6 +68,20 @@ def plain_text(value):
     return re.sub(r"\n{3,}", "\n\n", unescape("".join(parser.parts))).strip()
 
 
+def menu_text(value):
+    """Remove only the school's repeated footer, preserving other menu notes."""
+    text = plain_text(value)
+    footers = (
+        'NOTA: Primero y segundo plato se pueden repetir. Los niños pequeños pueden disponer de un puré variado diario de verduras, patatas y legumbres en sustitución del primer plato.',
+        'Existe a su disposición información sobre las sustancias causantes de alergias e intolerancias alimentarias, conforme al Reglamento nº1169/2011.',
+    )
+    for footer in footers:
+        pattern = r'\s+'.join(re.escape(word) for word in footer.split())
+        pattern = pattern.replace('nº1169', r'n[º°o]\s*1169')
+        text = re.sub(pattern, '', text, flags=re.IGNORECASE)
+    return re.sub(r'\n{3,}', '\n\n', text).strip()
+
+
 class _MessageText(_Text):
     def __init__(self):
         super().__init__()

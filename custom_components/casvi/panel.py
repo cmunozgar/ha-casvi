@@ -10,6 +10,7 @@ from zoneinfo import ZoneInfo
 import voluptuous as vol
 from homeassistant.components import frontend, panel_custom, websocket_api
 from homeassistant.components.http import StaticPathConfig
+from .api import menu_text
 from .api import CasviError, plain_text, message_text
 from .calendar import calendar_events
 from .message_format import message_nodes
@@ -135,9 +136,9 @@ def summary(coordinator):
                      for ident, name in coordinator.children.items()],
         "messages": [panel_message_summary(coordinator, r) for r in data["messages"]],
         "total_messages": data["total"],
-        "menu": next((plain_text(r.get("menu")) for r in data["menus"] if r.get("fecha") == today), ""),
+        "menu": next((menu_text(r.get("menu")) for r in data["menus"] if r.get("fecha") == today), ""),
         "menus": [{"date": (datetime.fromisoformat(today).date() + timedelta(days=offset)).isoformat(),
-                   "menu": next((plain_text(r.get("menu")) for r in data["menus"]
+                   "menu": next((menu_text(r.get("menu")) for r in data["menus"]
                                  if r.get("fecha") == (datetime.fromisoformat(today).date() + timedelta(days=offset)).isoformat()), "")}
                   for offset in (-1, 0, 1)],
         "date": today,
@@ -387,6 +388,6 @@ async def ws_menu(hass, connection, msg):
         return
     prefix = f"{msg['year']:04d}-{msg['month']:02d}-"
     connection.send_result(msg['id'], {'menus': [
-        {'date': str(row.get('fecha', '')), 'menu': plain_text(row.get('menu'))}
+        {'date': str(row.get('fecha', '')), 'menu': menu_text(row.get('menu'))}
         for row in rows if str(row.get('fecha', '')).startswith(prefix)
     ]})

@@ -29,14 +29,23 @@ class CasviSchoolPanel extends HTMLElement {
       button.event-card{display:block;width:100%;min-width:0;padding:12px 8px;border:0;border-bottom:1px solid var(--divider-color,#dce3e8);border-radius:6px;background:transparent;text-align:left}button.event-card:hover{background:var(--secondary-background-color,#edf3f7)}.event-title{display:block;font-size:15px;font-weight:600;margin:4px 0;overflow-wrap:anywhere}.event-card .excerpt{font-size:14px;line-height:1.45;margin-top:4px;-webkit-line-clamp:2}.event-card .recipient{margin-top:0;font-size:12px}
       .student-tags{display:inline-flex;flex-wrap:wrap;gap:6px;vertical-align:middle}.student-tag{display:inline-flex;align-items:center;border-radius:6px;padding:3px 9px;font-size:12px;font-weight:600;line-height:1.5}.row>.student-tags{display:flex;margin-top:8px}#sender{display:flex;align-items:center;flex-wrap:wrap;gap:8px}.event-card>.student-tags{margin-bottom:4px}
       .item-metadata{display:flex;align-items:center;flex-wrap:wrap;gap:6px 10px;margin:7px 0;color:var(--secondary-text-color,#526575);font-size:12px;line-height:1.5}.item-metadata time{white-space:nowrap}.row .subject,.event-card .subject{font-size:15px;line-height:1.4}.row .excerpt,.event-card .excerpt{font-size:14px;line-height:1.45;margin-top:6px}#sender>.item-metadata{margin:0}
+
+      #home-dining,#home-schedules{background:var(--card-background-color,white);border:1px solid var(--divider-color,#dce3e8);border-radius:12px;padding:22px;margin-bottom:28px}#home-dining .meal-row{margin-bottom:0}#home-dining .meal-controls{margin:12px 0 0}#home-schedules .home-schedule-cards{margin-bottom:0}.schedule-section h4{margin:18px 0 8px}.schedule-section .schedule-status{margin:8px 0 16px}
+      main h2{display:flex;align-items:center;gap:10px}main h2::before{content:'';display:inline-block;flex:0 0 24px;width:24px;height:24px;background:var(--primary-color,#12677b);mask:var(--section-icon) center/contain no-repeat;-webkit-mask:var(--section-icon) center/contain no-repeat}.month-toolbar h2,#events-month{justify-content:center}.meal-row h2::before,.dialog-head h2::before{display:none}
+      @media(max-width:600px){#home-dining,#home-schedules{padding:18px}}
+main{--section-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M4%205h16v16H4z%20M4%2010h16%20M8%203v4%20M16%203v4%22%2F%3E%3C%2Fsvg%3E")}
+#home-dining,#month-title{--section-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M4%203v6q0%203%203%203V3%20M4%207h6V3%20M7%2012v9%20M19%203q-5%205-3%2010h3%20M19%203v18%22%2F%3E%3C%2Fsvg%3E")}
+#messages-title{--section-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M3%205h18v14H3z%20M3%205l9%207%209-7%22%2F%3E%3C%2Fsvg%3E")}
+#home-schedules{--section-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M2%2017q2-2%204%200t4%200t4%200t4%200t4%200%20M5%2013l5-5%205%204%204%201%20M10%208%207%205%203%207%22%2F%3E%3C%2Fsvg%3E")}
+#teacher-section,#child-data,#child-name{--section-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M2%208l10-5%2010%205-10%205z%20M6%2010v6c3%203%209%203%2012%200v-6%20M22%208v7%22%2F%3E%3C%2Fsvg%3E")}
       </style>
       <main>
         <select id="account" aria-label="Cuenta familiar" hidden></select>
         <div class="panel-navigation"><button id="sidebar-toggle" aria-label="Abrir menú lateral" title="Abrir menú lateral"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><details id="mobile-section"><summary aria-label="Elegir sección"><span id="mobile-current"></span><svg class="section-chevron" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><div id="mobile-options" aria-label="Secciones del colegio"></div></details><nav id="tabs" aria-label="Secciones del colegio" role="tablist"></nav></div><div id="error" role="status" class="error" hidden></div><div id="loading"></div>
-        <section id="meal-row" class="meal-row" aria-label="Menús del comedor" tabindex="0" hidden></section><div id="meal-controls" class="meal-controls" aria-label="Día del menú" hidden></div><section id="home-events" hidden style="margin-bottom:28px"><h2 id="home-events-title">Últimos eventos</h2><div id="home-events-list"></div></section><div id="content" class="grid" hidden>
+        <section id="home-dining" hidden><h2>Comedor</h2><section id="meal-row" class="meal-row" aria-label="Menús del comedor" tabindex="0" hidden></section><div id="meal-controls" class="meal-controls" aria-label="Día del menú" hidden></div></section><section id="home-events" hidden style="margin-bottom:28px"><h2 id="home-events-title">Últimos eventos</h2><div id="home-events-list"></div></section><div id="content" class="grid" hidden>
           <section><div class="toolbar"><h2 id="messages-title">Últimos mensajes</h2><button id="filter" aria-pressed="false">Solo pendientes</button></div><p id="count" class="hint"></p><div id="messages"></div><div id="pager" class="pager" hidden><button id="previous">Anterior</button><span id="page-label"></span><button id="next">Siguiente</button></div></section>
         </div>
-        <section id="home-schedules" hidden><h2>Clases de hoy</h2><div id="home-schedule-cards" class="home-schedule-cards"></div></section>
+        <section id="home-schedules" hidden><h2>Piscina y educación física</h2><div id="home-schedule-cards" class="home-schedule-cards"></div></section>
         <section id="dining-view" hidden><div class="toolbar month-toolbar"><h2 id="month-title"></h2></div><div id="month-status" role="status"></div><div class="month-scroll"><div id="month-grid" class="month-grid"></div></div></section>
 <section id="events-view" hidden><div class="toolbar"><button id="events-prev" aria-label="Mes anterior">‹</button><h2 id="events-month" style="text-align:center"></h2><button id="events-next" aria-label="Mes siguiente">›</button></div><div id="events-info"></div><div class="month-scroll"><div id="events-grid" class="month-grid events-grid"></div></div></section>
         <section id="child-view" hidden><div class="child-heading"><h2 id="child-name"></h2><p id="child-group"></p><p id="child-tutor"></p><p id="child-status" role="status"></p></div><section id="schedule-section" class="schedule-section" hidden><h2>Horario semanal</h2><p id="schedule-note" class="hint"></p><div id="schedule-week-table" class="schedule-table week"></div></section><section id="teacher-section"><h2>Profesores</h2><div id="teachers" class="teachers"></div></section><section id="child-data"><h2>Compañeros de clase</h2><ol id="classmates" class="people"></ol></section></section>
@@ -105,7 +114,7 @@ class CasviSchoolPanel extends HTMLElement {
   }
   render() {
     const a=this.accounts.find(a=>a.entry_id===this.$('account').value)||this.accounts[0];
-    this.$('meal-row').hidden=!a||this.view!=='home';
+    this.$('meal-row').hidden=!a||this.view!=='home';this.$('home-dining').hidden=!a||this.view!=='home';
     this.$('meal-controls').hidden=!a||this.view!=='home';
     this.$('home-schedules').hidden=!a||this.view!=='home';
     if(a&&this.view==='home')this.renderHomeSchedules(a);
@@ -389,6 +398,7 @@ class CasviSchoolPanel extends HTMLElement {
       const profile=this.homeProfiles?.[child.id];
       if(!profile?.schedule){const status=document.createElement('p');status.className='hint';status.setAttribute('role','status');if(profile?.scheduleError)status.textContent=profile.scheduleError;else status.append(this.loader('Cargando horario'));card.append(status);return card;}
       const day=this.scheduleParser.daySchedule(profile.schedule,weekday);
+      const todayTitle=document.createElement('h4');todayTitle.textContent='Hoy';card.append(todayTitle);
       const flags=document.createElement('div');flags.className='schedule-status';
       const labels=[['Piscina',day.swimming,day.combined,'pool']];
       if(/infantil/i.test(profile.group||''))labels.push(['Psicomotricidad',day.psychomotor,false,'physical']);
@@ -398,8 +408,6 @@ class CasviSchoolPanel extends HTMLElement {
       const tomorrowTitle=document.createElement('h4');tomorrowTitle.textContent='Para mañana';card.append(tomorrowTitle);
       const tomorrowFlags=document.createElement('div');tomorrowFlags.className='schedule-status';
       for(const [label,yes,icon] of [['Piscina',tomorrow.swimming,'pool'],['Educación física',tomorrow.physical||tomorrow.psychomotor,'physical']]){const badge=document.createElement('span');badge.append(this.tabIcon(icon),document.createTextNode(label+': '+(yes?'Sí':'No')));if(yes)badge.className='active';tomorrowFlags.append(badge);}card.append(tomorrowFlags);
-      if(day.rows.length){const wrapper=document.createElement('div');wrapper.className='schedule-table';wrapper.append(this.scheduleTable(['Hora','Clase'],day.rows.map(r=>[r.start+'–'+r.end,r.subject])));card.append(wrapper);}
-      else card.append(this.emptyState('calendar','Hoy no hay clases','No hay clases previstas en el horario semanal.'));
       return card;
     }));
   }

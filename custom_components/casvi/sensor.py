@@ -3,6 +3,7 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from .api import menu_text
 from .api import plain_text
 
 
@@ -44,7 +45,7 @@ class CasviSensor(CoordinatorEntity, SensorEntity):
         if self.key == "latest":
             return plain_text(data["messages"][0].get("asunto"))[:250] if data["messages"] else "Sin mensajes"
         menu = self._menu()
-        text = " ".join(plain_text(menu.get("menu")).split()) if menu else ""
+        text = " ".join(menu_text(menu.get("menu")).split()) if menu else ""
         if not text:
             return "Sin menú publicado"
         return text if len(text) <= 255 else text[:254].rstrip() + "…"
@@ -55,7 +56,7 @@ class CasviSensor(CoordinatorEntity, SensorEntity):
         if self.key == "menu":
             menu = self._menu()
             return {"fecha": menu["fecha"] if menu else None,
-                    "menu": plain_text(menu["menu"]) if menu else ""}
+                    "menu": menu_text(menu["menu"]) if menu else ""}
         if self.key == "unread":
             return {"mensajes_examinados": len(data["messages"]), "total_buzon": data["total"]}
         if self.key != "latest" or not data["messages"]:

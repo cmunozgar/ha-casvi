@@ -1,5 +1,15 @@
 # Cambios
 
+## 0.7.1
+
+- Comedor agrupado en una sección propia en Inicio.
+- Iconos en los encabezados de las secciones del panel.
+- Inicio prioriza piscina y educación física de hoy y mañana; el horario completo se conserva en la ficha del alumno.
+- Se ocultan los dos párrafos repetidos del pie del menú en Inicio, Comedor y la entidad, conservando platos y otras notas específicas.
+- Validación: 74 pruebas Python y 3 JavaScript superadas.
+
+Actualiza en HACS, reinicia Home Assistant y recarga el panel.
+
 ## 0.7.0
 
 - Nueva pantalla «Avisos y actualizaciones», con nombres de móviles legibles y campos numéricos visibles.
