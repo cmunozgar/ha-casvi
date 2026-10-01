@@ -178,3 +178,5 @@ Las opciones «Avisos y actualizaciones» permiten activar por separado mensajes
 ### Inicio simplificado
 
 El comedor aparece dentro de su propia sección y los encabezados del panel llevan iconos. El resumen de actividades muestra piscina y educación física de hoy y mañana para preparar la mochila; el horario completo permanece en la ficha de cada alumno. Las notas generales repetidas sobre repetición de platos e información de alérgenos se ocultan del menú mostrado y del sensor, conservando otras notas específicas.
+
+Los calendarios omiten semanas sin días laborables dentro del mes. En Eventos, un mes sin anotaciones muestra solo el estado vacío, sin cuadrícula.

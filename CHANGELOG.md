@@ -1,5 +1,14 @@
 # Cambios
 
+## 0.7.2
+
+- Corrige las filas completamente vacías al ocultar fines de semana en los calendarios de eventos y comedor, como noviembre de 2026.
+- Los meses sin eventos muestran únicamente el estado vacío, sin una cuadrícula vacía debajo.
+- Añade pruebas de regresión para ambos casos y las incluye en la validación automática.
+- Validación: 74 pruebas Python y 5 JavaScript superadas.
+
+Actualiza en HACS, reinicia Home Assistant y recarga el panel.
+
 ## 0.7.1
 
 - Comedor agrupado en una sección propia en Inicio.

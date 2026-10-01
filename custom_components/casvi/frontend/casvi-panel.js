@@ -250,13 +250,15 @@ main{--section-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww
     this.$('events-month').textContent=new Intl.DateTimeFormat('es-ES',{month:'long',year:'numeric',timeZone:'UTC'}).format(date);
     const events=(account.events||[]).filter(e=>this.eventDate(e.start).startsWith(month)).sort((a,b)=>a.start.localeCompare(b.start));
     this.$('events-info').replaceChildren(...(events.length?[]:[this.emptyState('calendar','Sin eventos este mes','No hay anotaciones para este mes entre los eventos recibidos.')]));
-    const grid=this.$('events-grid');grid.replaceChildren();
+    const grid=this.$('events-grid');grid.replaceChildren();grid.hidden=!events.length;if(!events.length)return;
     for(const day of ['Lunes','Martes','Miércoles','Jueves','Viernes']){const cell=document.createElement('div');cell.className='month-weekday';cell.textContent=day;grid.append(cell);}
     const offset=(date.getUTCDay()+6)%7,days=new Date(Date.UTC(year,m,0)).getUTCDate();
     const slots=Array.from({length:Math.ceil((offset+days)/7)*7},(_,index)=>index);
     if(mobile)slots.reverse();
     for(const slot of slots){
       if(slot%7>=5)continue;
+      const weekStart=slot-slot%7;
+      if(weekStart+4-offset+1<1||weekStart-offset+1>days)continue;
       const day=slot-offset+1,cell=document.createElement('section');cell.className='month-day';
       if(day<1||day>days){cell.classList.add('empty-day');grid.append(cell);continue;}
       const key=month+'-'+String(day).padStart(2,'0'),rows=events.filter(e=>this.eventDate(e.start)===key);
@@ -283,6 +285,8 @@ main{--section-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww
       const days=new Date(Date.UTC(year,month,0)).getUTCDate();
       for(let slot=0;slot<Math.ceil((offset+days)/7)*7;slot++){
         if(slot%7>=5)continue;
+      const weekStart=slot-slot%7;
+      if(weekStart+4-offset+1<1||weekStart-offset+1>days)continue;
         const day=slot-offset+1;const cell=document.createElement('div');cell.className='month-day';
         if(day<1||day>days){cell.classList.add('empty-day');cell.setAttribute('aria-hidden','true');grid.append(cell);continue;}
         const key=`${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
