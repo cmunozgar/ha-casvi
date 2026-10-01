@@ -537,7 +537,7 @@ class CasviSchoolPanel extends HTMLElement {
         if(!['application/pdf','image/png','image/jpeg','image/gif','image/webp'].includes(result.mime))throw new Error('Unsupported attachment');
         const bytes=Uint8Array.from(atob(result.data),c=>c.charCodeAt(0));
         const url=URL.createObjectURL(new Blob([bytes],{type:result.mime}));(this.attachmentURLs??=[]).push(url);
-        link.href=url;link.download=attachment.name;if(!link.isConnected)section.append(link);
+        link.href=url;if(!link.isConnected)section.append(link);
         if(result.mime.startsWith('image/')){
           const image=document.createElement('img');image.alt=attachment.name;image.style.cssText='display:block;max-width:100%;height:auto;margin:12px auto';
           image.src=url;preview.replaceChildren(image);

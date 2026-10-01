@@ -20,7 +20,7 @@ class MessageNotifications:
     async def process(self, rows):
         if self.state is None:
             self.state = await self.store.async_load()
-        targets = self.entry.options.get("notify_targets", [])
+        targets = self.entry.options.get("notify_targets", []) if self.entry.options.get("notify_messages", True) else []
         if self.state is None:
             self.state = {"seen": [], "baseline": max((str(r.get("fechaEnvio", "")) for r in rows), default=""), "pending": {}}
             self.state["seen"] = [message_key(r) for r in rows]

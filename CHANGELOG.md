@@ -1,5 +1,16 @@
 # Cambios
 
+## 0.7.0
+
+- Nueva pantalla «Avisos y actualizaciones», con nombres de móviles legibles y campos numéricos visibles.
+- Casillas independientes para avisos de mensajes y eventos nuevos.
+- Avisos de eventos con alumno, título y fecha, sin notificar el historial inicial.
+- Contadores persistentes de eventos nuevos, para la cuenta y por alumno.
+- Nombres de entidades por alumno sin apellidos, conservando sus identificadores.
+- Los adjuntos PDF e imágenes se abren en una pestaña nueva para consultarlos o guardarlos.
+
+Actualiza en HACS, reinicia Home Assistant y recarga el panel. Los avisos de eventos se activan desde las opciones de Casvi.
+
 ## 0.6.4
 
 - EF/NAT se interpreta como natación en el panel y los sensores.

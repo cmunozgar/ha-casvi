@@ -7,6 +7,7 @@ from homeassistant.exceptions import ConfigEntryAuthFailed, HomeAssistantError
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .notifications import MessageNotifications
+from .event_tracking import EventTracker
 from .schedule import ScheduleReader
 from .profiles import ProfileCache
 
@@ -23,6 +24,8 @@ class CasviCoordinator(DataUpdateCoordinator):
         self.entry = entry
         self.children = entry.data["children"]
         self.notifications = MessageNotifications(hass, entry)
+        self.event_tracker = EventTracker(hass, entry.entry_id)
+        self.event_tracker.entry = entry
         self.profiles = ProfileCache(hass, client, entry.entry_id)
         self.schedules = ScheduleReader(hass, client, entry.entry_id, self.profiles)
 
@@ -47,6 +50,10 @@ class CasviCoordinator(DataUpdateCoordinator):
                 await self.notifications.process(data["messages"])
             except (OSError, HomeAssistantError):
                 logging.getLogger(__name__).warning("Could not persist or deliver Casvi notifications")
+            try:
+                data['new_events'] = await self.event_tracker.process(data['agenda'])
+            except (OSError, HomeAssistantError):
+                logging.getLogger(__name__).warning('Could not persist Casvi event tracking')
             return data
         except CasviAuthError as err:
             raise ConfigEntryAuthFailed("Casvi login needs attention") from err

@@ -4,6 +4,7 @@ import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.core import callback
 from homeassistant.helpers import selector
+from homeassistant.util import slugify
 
 from .api import CasviClient, CasviAuthError, CasviError
 from .const import DOMAIN, DEFAULT_INTERVAL
@@ -87,15 +88,23 @@ class CasviConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 class CasviOptionsFlow(config_entries.OptionsFlow):
     async def async_step_init(self, user_input=None):
         if user_input is not None:
+            user_input = {**user_input, "interval": int(user_input["interval"]), "message_limit": int(user_input["message_limit"])}
             return self.async_create_entry(title="", data=user_input)
         targets = sorted(set(self.config_entry.options.get("notify_targets", [])) | {
             name for name in self.hass.services.async_services().get("notify", {})
             if name.startswith("mobile_app_")
         })
+        labels = {}
+        for entry in self.hass.config_entries.async_entries('mobile_app'):
+            device_name = entry.data.get('device_name') or entry.title
+            labels['mobile_app_' + slugify(device_name)] = device_name
+        target_options = [{'value': target, 'label': labels.get(target, target.removeprefix('mobile_app_').replace('_', ' ').title())} for target in targets]
         return self.async_show_form(step_id="init", data_schema=vol.Schema({
             vol.Required("notify_targets", default=self.config_entry.options.get("notify_targets", [])): selector.SelectSelector(
-                selector.SelectSelectorConfig(multiple=True, options=targets)
+                selector.SelectSelectorConfig(multiple=True, options=target_options)
             ),
-            vol.Required("interval", default=self.config_entry.options.get("interval", DEFAULT_INTERVAL)): vol.All(vol.Coerce(int), vol.Range(min=5, max=120)),
-            vol.Required("message_limit", default=self.config_entry.options.get("message_limit", 50)): vol.All(vol.Coerce(int), vol.Range(min=10, max=100)),
+            vol.Required("notify_messages", default=self.config_entry.options.get("notify_messages", True)): selector.BooleanSelector(),
+            vol.Required("notify_events", default=self.config_entry.options.get("notify_events", False)): selector.BooleanSelector(),
+            vol.Required("interval", default=self.config_entry.options.get("interval", DEFAULT_INTERVAL)): selector.NumberSelector(selector.NumberSelectorConfig(min=5, max=120, step=1, mode=selector.NumberSelectorMode.BOX)),
+            vol.Required("message_limit", default=self.config_entry.options.get("message_limit", 50)): selector.NumberSelector(selector.NumberSelectorConfig(min=10, max=100, step=1, mode=selector.NumberSelectorMode.BOX)),
         }))

@@ -166,3 +166,11 @@ Consulta [CHANGELOG.md](CHANGELOG.md) para ver los cambios por versión.
 Abre una incidencia con las versiones de Home Assistant y Casvi, los pasos y el error sin datos personales. No adjuntes contraseñas, cookies, archivos HAR, mensajes del colegio ni nombres o identificadores de menores. Consulta [CONTRIBUTING.md](CONTRIBUTING.md).
 
 Código bajo licencia MIT. Se utiliza el logotipo de la intranet para identificar el servicio; no implica vinculación oficial. Las marcas y los recursos de terceros tienen sus propias condiciones, descritas en [NOTICE.md](NOTICE.md).
+
+### Eventos nuevos y nombres de alumnos
+
+Las entidades de alumnos muestran solo el nombre, sin apellidos, y conservan sus identificadores. Los nombres personalizados por el usuario en Home Assistant se mantienen.
+
+**Eventos nuevos** está disponible para la cuenta y para cada hijo. Es un contador acumulado de identificadores nuevos desde la primera sincronización: el historial inicial no incrementa el contador. Conserva su valor tras reiniciar, no vuelve a contar eventos que desaparecen y reaparecen, y no cuenta ediciones de eventos existentes. No representa eventos sin leer. El total de la cuenta suma las detecciones por alumno. Puede usarse en automatizaciones comprobando que el nuevo valor sea mayor que el anterior. El seguimiento se elimina al borrar la integración.
+
+Las opciones «Avisos y actualizaciones» permiten activar por separado mensajes y eventos nuevos, con los mismos móviles de destino. Los eventos están desactivados por defecto; los avisos de mensajes conservan el comportamiento anterior. Los avisos de eventos incluyen nombre, título y fecha y abren el panel Colegio. El historial de eventos inicial no se notifica; los eventos detectados mientras los avisos están desactivados tampoco se envían al activarlos. Los móviles se muestran por su nombre y los intervalos se editan con campos numéricos.

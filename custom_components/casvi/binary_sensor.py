@@ -20,6 +20,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
 class CasviActivity(CoordinatorEntity, BinarySensorEntity):
     def __init__(self, coordinator, child, name, activity, day_offset=0):
         super().__init__(coordinator)
+        name = name.split()[0] if name.strip() else name
         self.child, self.activity = child, activity
         self.day_offset = day_offset
         suffix = "tomorrow" if day_offset else "today"

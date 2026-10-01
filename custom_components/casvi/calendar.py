@@ -40,6 +40,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
 class CasviCalendar(CoordinatorEntity, CalendarEntity):
     def __init__(self, coordinator, child, name):
         super().__init__(coordinator)
+        name = name.split()[0] if name.strip() else name
         self.child = child
         self._attr_name = f"Casvi agenda {name}"
         self._attr_unique_id = f"{coordinator.entry.entry_id}_agenda_{child}"

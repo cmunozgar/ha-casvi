@@ -53,6 +53,7 @@ async def async_unload_entry(hass, entry):
 
 
 async def async_remove_entry(hass, entry):
+    await Store(hass, 1, f"casvi.events.{entry.entry_id}").async_remove()
     await Store(hass, 1, f"casvi.messages.{entry.entry_id}").async_remove()
 
     await Store(hass, 1, f"casvi.schedules.{entry.entry_id}").async_remove()

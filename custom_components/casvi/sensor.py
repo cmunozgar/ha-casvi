@@ -14,6 +14,8 @@ async def async_setup_entry(hass, entry, async_add_entities):
         ("menu", "Casvi comedor hoy"),
     ])
     coordinator = entry.runtime_data
+    async_add_entities([CasviNewEvents(coordinator)] +
+                       [CasviNewEvents(coordinator, child) for child in coordinator.children])
     async_add_entities([CasviUnreadWidget(coordinator, slot) for slot in range(3)] +
                        [entity for child in coordinator.children
                         for entity in (CasviUnreadWidget(coordinator, child=child, count=True),
@@ -86,7 +88,7 @@ class CasviUnreadWidget(CoordinatorEntity, SensorEntity):
     def __init__(self, coordinator, slot=0, child=None, count=False):
         super().__init__(coordinator)
         self.slot, self.child, self.count = slot, child, count
-        scope = coordinator.children[child] if child else ''
+        scope = coordinator.children[child].split()[0] if child and coordinator.children[child].strip() else ''
         label = 'Mensajes no leídos recientes' if count else f'Mensaje no leído {slot+1}'
         self._attr_name = f'Casvi {scope} {label}'.replace('  ',' ')
         self._attr_unique_id = f'{coordinator.entry.entry_id}_widget_{child or "account"}_{"count" if count else slot}'
@@ -118,3 +120,29 @@ class CasviUnreadWidget(CoordinatorEntity, SensorEntity):
                       'alumnos':[name for name in names if name], 'asunto':plain_text(row.get('asunto')),
                       'url':'/colegio?'+urlencode({'entry':self.coordinator.entry.entry_id,'message':row['id'],'recipient':row['idPara']})})
         return attrs
+
+
+class CasviNewEvents(CoordinatorEntity, SensorEntity):
+    """Cumulative newly detected events, excluding the initial history."""
+    _attr_icon = 'mdi:calendar-plus'
+
+    def __init__(self, coordinator, child=None):
+        super().__init__(coordinator)
+        self.child = child
+        name = coordinator.children[child].split()[0] if child and coordinator.children[child].strip() else ''
+        self._attr_name = f'Casvi {name} Eventos nuevos'.replace('  ', ' ')
+        self._attr_unique_id = f'{coordinator.entry.entry_id}_new_events_{child or "account"}'
+
+    @property
+    def available(self):
+        return super().available and 'new_events' in (self.coordinator.data or {})
+
+    @property
+    def native_value(self):
+        counts = (self.coordinator.data or {}).get('new_events', {})
+        return counts.get(self.child, 0) if self.child else sum(counts.values())
+
+    @property
+    def extra_state_attributes(self):
+        return {'alcance': 'Acumulado desde la primera sincronización; no indica eventos sin leer',
+                'url': '/colegio', 'alumno_id': self.child}
