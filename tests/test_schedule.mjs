@@ -35,3 +35,12 @@ test('Missing weekdays and cells fail closed',()=>{
  assert.throws(()=>parseSchedule([]));
  assert.throws(()=>parseSchedule(fixture().filter(i=>i.str!=='NATACIÓN')));
 });
+test('Primary and infant activity labels match the school timetable',()=>{
+ for(const [subject,swimming,physical,psychomotor] of [
+  ['E. FÍSICA',false,true,false],['EF/NAT',true,false,false],
+  ['PSICOMOTRICIDAD',false,false,true],['NATACIÓN',true,false,false],
+ ]){
+  const day=daySchedule({rows:[{subjects:Array(5).fill(subject)}]},0);
+  assert.deepEqual([day.swimming,day.physical,day.psychomotor],[swimming,physical,psychomotor],subject);
+ }
+});

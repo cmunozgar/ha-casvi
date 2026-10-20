@@ -38,7 +38,9 @@ main{--section-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww
 #messages-title{--section-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M3%205h18v14H3z%20M3%205l9%207%209-7%22%2F%3E%3C%2Fsvg%3E")}
 #home-schedules{--section-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M2%2017q2-2%204%200t4%200t4%200t4%200t4%200%20M5%2013l5-5%205%204%204%201%20M10%208%207%205%203%207%22%2F%3E%3C%2Fsvg%3E")}
 #teacher-section,#child-data,#child-name{--section-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M2%208l10-5%2010%205-10%205z%20M6%2010v6c3%203%209%203%2012%200v-6%20M22%208v7%22%2F%3E%3C%2Fsvg%3E")}
-      </style>
+      .section-link{font:inherit;color:inherit;border:0;padding:0;background:transparent;text-align:left}.section-link:hover{text-decoration:underline}
+      .meal-row{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.meal-row .menu{padding:14px;border-top-width:3px}.meal-heading{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.meal-badge{font-size:12px;font-weight:600;padding:3px 8px;border-radius:20px;background:var(--secondary-background-color,#edf3f7)}.today .meal-badge{background:var(--casvi-accent);color:var(--casvi-on-accent)}.meal-row .menu p{font-size:13px;line-height:1.5;margin-top:12px}.meal-row .date{font-size:12px}.meal-row .empty-state{padding:12px}
+    </style>
       <main>
         <select id="account" aria-label="Cuenta familiar" hidden></select>
         <div class="panel-navigation"><button id="sidebar-toggle" aria-label="Abrir menú lateral" title="Abrir menú lateral"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><details id="mobile-section"><summary aria-label="Elegir sección"><span id="mobile-current"></span><svg class="section-chevron" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><div id="mobile-options" aria-label="Secciones del colegio"></div></details><nav id="tabs" aria-label="Secciones del colegio" role="tablist"></nav></div><div id="error" role="status" class="error" hidden></div><div id="loading"></div>
@@ -130,7 +132,7 @@ main{--section-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww
     if(this.view==='dining')return;
     if(this.view.startsWith('child:')) {this.renderChild(a);return;}
     this.$('content').classList.add('inbox');
-    this.$('messages-title').textContent=this.view==='messages'?'Todos los mensajes':`Mensajes no leídos (${a.messages.filter(m=>!m.read).length})`;
+    if(this.view==='messages')this.$('messages-title').textContent='Todos los mensajes';else this.sectionHeading('messages-title',`Mensajes no leídos (${a.messages.filter(m=>!m.read).length})`,'messages');
     this.$('filter').hidden=true;
     this.$('pager').hidden=this.view!=='messages';
     if(!a.available){this.$('error').textContent='Casvi no está disponible. Se muestran los últimos datos recibidos.';this.$('error').hidden=false;}
@@ -162,14 +164,14 @@ main{--section-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww
     if(this.mealSignature===signature)return;
     if(this.mealDate!==account.date||this.mealAccount!==account.entry_id)this.mealIndex=1;
     this.mealDate=account.date;this.mealAccount=account.entry_id;this.mealSignature=signature;
-    const titles=['Qué comimos ayer','Qué comemos hoy','Qué comeremos mañana'];
+    const titles=['Ayer','Hoy','Mañana'];
     this.$('meal-row').replaceChildren(...[-1,0,1].map((offset,index)=>{
       const date=new Date(account.date+'T12:00:00Z');date.setUTCDate(date.getUTCDate()+offset);const key=date.toISOString().slice(0,10);
       const menu=account.menus?.find(m=>m.date===key)?.menu||(offset===0?account.menu:'');
       const article=document.createElement('article');article.className='menu'+(offset===0?' today':'');
       const label=document.createElement('div');label.className='date';label.textContent=date.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long',timeZone:'UTC'});
-      const title=document.createElement('h2');title.textContent=titles[index];const content=document.createElement('p');content.textContent=menu||'No hay menú publicado para este día.';
-      article.append(label,title,menu?content:this.emptyState('dining','Sin menú publicado','El colegio todavía no ha publicado un menú para este día.'));return article;
+      const title=document.createElement('span');title.className='meal-badge';title.textContent=titles[index];const content=document.createElement('p');content.textContent=menu||'No hay menú publicado para este día.';
+      const heading=document.createElement('div');heading.className='meal-heading';heading.append(title,label);article.append(heading,menu?content:this.emptyState('dining','Sin menú publicado','El colegio todavía no ha publicado un menú para este día.'));return article;
     }));
     this.positionMeal();
   }
@@ -231,12 +233,16 @@ main{--section-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww
     const dialog=this.shadowRoot.querySelector('dialog');if(!dialog.open)dialog.showModal();
   }
   renderLatestEvents(account){
-    const events=(account.events||[]).filter(e=>this.eventDate(e.start)<=account.date);
-    const latest=events.map(e=>this.eventDate(e.start)).sort().at(-1);
-    this.$('home-events-title').textContent=latest?'Eventos · '+new Intl.DateTimeFormat('es-ES',{weekday:'long',day:'numeric',month:'long',timeZone:'UTC'}).format(new Date(latest+'T12:00:00Z')):'Últimos eventos';
-    const list=this.$('home-events-list');list.replaceChildren(...events.filter(e=>this.eventDate(e.start)===latest).map(e=>this.eventCard(e)));
-    if(!latest)list.append(this.emptyState('calendar','Sin eventos recientes','Aquí aparecerán las anotaciones de los profesores.'));
+    const events=(account.events||[]).filter(e=>this.eventDate(e.start)===account.date);
+    this.sectionHeading('home-events-title','Eventos de hoy','events');
+    const list=this.$('home-events-list');list.replaceChildren(...events.map(e=>this.eventCard(e)));
+    if(!events.length)list.append(this.emptyState('calendar','No hay eventos hoy',''));
   }
+  sectionHeading(id,label,view){
+    const button=document.createElement('button');button.className='section-link';button.textContent=label;
+    button.onclick=()=>this.navigate(view);this.$(id).replaceChildren(button);
+  }
+
   changeEventsMonth(offset){
     const account=this.currentAccount();if(!account)return;
     const [year,month]=(this.eventsMonth||account.date.slice(0,7)).split('-').map(Number);
@@ -355,7 +361,7 @@ main{--section-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww
     const current=guard||(()=>request===this.childRequest&&this.profile===profile&&this.view==='child:'+child&&this.currentAccount()?.entry_id===entry);
     const render=update||(()=>this.renderSchedule(profile));
     if(profile.schedule){
-      this.scheduleParser=await import('/casvi-static/schedule.mjs');
+      this.scheduleParser=await import('/casvi-static/schedule.mjs?v=2');
       if(current())render();return;
     }
     const doc=this.latestSchedule(profile.documents)[0];
@@ -364,7 +370,7 @@ main{--section-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww
     try{
       const result=await this._hass.callWS({type:'casvi/document',entry_id:entry,child_id:child,document_id:doc.id,kind:doc.kind});
       if(!current())return;
-      const [pdfjs,parser]=await Promise.all([import('/casvi-static/pdfjs/pdf.mjs'),import('/casvi-static/schedule.mjs')]);
+      const [pdfjs,parser]=await Promise.all([import('/casvi-static/pdfjs/pdf.mjs'),import('/casvi-static/schedule.mjs?v=2')]);
       pdfjs.GlobalWorkerOptions.workerSrc='/casvi-static/pdfjs/pdf.worker.mjs';
       task=pdfjs.getDocument({data:Uint8Array.from(atob(result.pdf),c=>c.charCodeAt(0)),isEvalSupported:false,cMapUrl:'/casvi-static/pdfjs/cmaps/',cMapPacked:true,standardFontDataUrl:'/casvi-static/pdfjs/standard_fonts/',wasmUrl:'/casvi-static/pdfjs/wasm/'});
       const pdf=await task.promise;let schedule;
@@ -404,10 +410,8 @@ main{--section-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww
       const day=this.scheduleParser.daySchedule(profile.schedule,weekday);
       const todayTitle=document.createElement('h4');todayTitle.textContent='Hoy';card.append(todayTitle);
       const flags=document.createElement('div');flags.className='schedule-status';
-      const labels=[['Piscina',day.swimming,day.combined,'pool']];
-      if(/infantil/i.test(profile.group||''))labels.push(['Psicomotricidad',day.psychomotor,false,'physical']);
-      else if(/primaria|secundaria|\beso\b|bachiller/i.test(profile.group||''))labels.push(['Educación física',day.physical,day.combined,'physical']);
-      for(const [label,yes,uncertain,icon] of labels){const badge=document.createElement('span');if(icon)badge.append(this.tabIcon(icon));badge.append(document.createTextNode(label+': '+(yes?'Sí':uncertain?'EF/NAT · por confirmar':'No')));if(yes||uncertain)badge.className='active';flags.append(badge);}card.append(flags);
+      const labels=[['Piscina',day.swimming,'pool'],['Educación física',day.physical||day.psychomotor,'physical']];
+      for(const [label,yes,icon] of labels){const badge=document.createElement('span');badge.append(this.tabIcon(icon),document.createTextNode(label+': '+(yes?'Sí':'No')));if(yes)badge.className='active';flags.append(badge);}card.append(flags);
       const tomorrow=this.scheduleParser.daySchedule(profile.schedule,(weekday+1)%7);
       const tomorrowTitle=document.createElement('h4');tomorrowTitle.textContent='Para mañana';card.append(tomorrowTitle);
       const tomorrowFlags=document.createElement('div');tomorrowFlags.className='schedule-status';

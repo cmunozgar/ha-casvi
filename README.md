@@ -1,10 +1,17 @@
 # Casvi para Home Assistant
 
+[![Abrir Casvi en HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=cmunozgar&repository=ha-casvi&category=integration)
+[![Configurar Casvi en Home Assistant](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=casvi)
+
 Integración personalizada para Home Assistant Container. Conecta directamente con la intranet, sin otro contenedor ni broker MQTT. Cada entrada utiliza una cuenta familiar y el centro predeterminado de esa sesión.
 
 Integración comunitaria no oficial, sin vinculación con el colegio Casvi. Cada familia utiliza su propia cuenta; el acceso se realiza directamente desde su Home Assistant a la intranet. No hay un servidor intermediario ni telemetría.
 
 ## Instalación con HACS
+
+**Instalación rápida:** pulsa **Abrir Casvi en HACS** arriba, añade el repositorio si se solicita y descarga la integración. Después de reiniciar Home Assistant, pulsa **Configurar Casvi en Home Assistant** para conectar tu cuenta.
+
+La primera vez, My Home Assistant puede pedirte la dirección de tu instancia. El botón de configuración requiere haber descargado Casvi y reiniciado previamente; no instala los archivos por sí solo. Si el enlace de HACS no encuentra el repositorio, sigue los pasos manuales de abajo.
 
 Requiere Home Assistant 2025.1 o posterior y HACS instalado. Probada con Home Assistant 2025.1.4; la compatibilidad con otras versiones se comprueba progresivamente.
 
@@ -39,7 +46,7 @@ En ordenador, las secciones se muestran como pestañas con iconos. En móvil se 
 Las secciones aparecen en este orden:
 
 1. **Comedor:** ayer, hoy y mañana; hoy está centrado en escritorio. En móvil cada tarjeta ocupa todo el ancho, empieza en hoy y permite deslizar o tocar los tres indicadores circulares.
-2. **Eventos del último día:** las anotaciones del día más reciente con eventos hasta hoy, indicando el alumno. No es una lista de próximos eventos.
+2. **Eventos de hoy:** las anotaciones del día actual, indicando el alumno. Si no hay, muestra «No hay eventos hoy». El encabezado abre la sección Eventos.
 3. **Mensajes no leídos (N):** pendientes entre los mensajes recientes consultados, a todo el ancho. El número no representa necesariamente todos los pendientes del buzón.
 4. **Clases de hoy por hijo:** horario diario e indicadores de piscina y educación física; en Infantil se muestra psicomotricidad.
 
@@ -180,3 +187,15 @@ Las opciones «Avisos y actualizaciones» permiten activar por separado mensajes
 El comedor aparece dentro de su propia sección y los encabezados del panel llevan iconos. El resumen de actividades muestra piscina y educación física de hoy y mañana para preparar la mochila; el horario completo permanece en la ficha de cada alumno. Las notas generales repetidas sobre repetición de platos e información de alérgenos se ocultan del menú mostrado y del sensor, conservando otras notas específicas.
 
 Los calendarios omiten semanas sin días laborables dentro del mes. En Eventos, un mes sin anotaciones muestra solo el estado vacío, sin cuadrícula.
+
+## Novedades de 0.7.3
+
+- El icono lateral de Colegio cambia a un sobre de alerta mientras haya mensajes sin leer entre los consultados, considerando todas las cuentas.
+- Inicio muestra solo los eventos de hoy y un estado vacío cuando no hay ninguno. Los encabezados de eventos y mensajes abren sus secciones.
+- Tarjetas de comedor más compactas, con badges Ayer/Hoy/Mañana antes de la fecha y texto más pequeño.
+- Piscina y educación física se muestran de forma consistente: E. FÍSICA y PSICOMOTRICIDAD cuentan como educación física; EF/NAT y NATACIÓN, como piscina.
+- Corrige la carga del intérprete de horarios en caché y elimina la etiqueta antigua «por confirmar».
+- Enlaces de instalación y configuración desde el README; errores de conexión distinguen DNS, certificados y tiempo de espera sin exponer credenciales.
+- Validación: 78 pruebas Python y 7 JavaScript superadas; vista local con datos de ejemplo revisada.
+
+Actualiza en HACS, reinicia Home Assistant y recarga el panel.

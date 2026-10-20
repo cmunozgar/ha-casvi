@@ -2,7 +2,7 @@
 from .api import CasviClient
 from .const import PLATFORMS
 from .coordinator import CasviCoordinator
-from .panel import async_setup_panel, async_remove_panel
+from .panel import async_setup_panel, async_remove_panel, update_sidebar
 from homeassistant.helpers.storage import Store
 
 
@@ -29,6 +29,8 @@ async def async_setup_entry(hass, entry):
         entry.runtime_data = coordinator
         await async_setup_panel(hass)
         hass.data.setdefault("casvi", {})[entry.entry_id] = coordinator
+        entry.async_on_unload(coordinator.async_add_listener(lambda: update_sidebar(hass)))
+        update_sidebar(hass)
         await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     except BaseException:
         hass.data.get("casvi", {}).pop(entry.entry_id, None)

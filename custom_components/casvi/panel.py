@@ -149,6 +149,24 @@ def summary(coordinator):
     }
 
 
+def update_sidebar(hass):
+    """Reflect unread messages across accounts without changing panel access."""
+    panel = hass.data.get(frontend.DATA_PANELS, {}).get("colegio")
+    if panel is None:
+        return
+    unread = any(str(row.get("leido")) != "1"
+                 for coordinator in hass.data.get("casvi", {}).values()
+                 for row in (coordinator.data or {}).get("messages", []))
+    icon = "mdi:email-alert-outline" if unread else "mdi:school-outline"
+    if panel.sidebar_icon != icon:
+        frontend.async_register_built_in_panel(
+            hass, component_name=panel.component_name,
+            sidebar_title=panel.sidebar_title, sidebar_icon=icon,
+            frontend_url_path="colegio", config=panel.config,
+            require_admin=panel.require_admin, update=True,
+        )
+
+
 async def async_setup_panel(hass):
     state = hass.data.setdefault("casvi_panel", {})
     async with state.setdefault("lock", asyncio.Lock()):
@@ -170,7 +188,7 @@ async def async_setup_panel(hass):
             await panel_custom.async_register_panel(
                 hass, frontend_url_path="colegio", webcomponent_name="casvi-school-panel",
                 sidebar_title="Colegio", sidebar_icon="mdi:school-outline",
-                module_url="/casvi-panel.js?v=0.4.0", require_admin=True,
+                module_url="/casvi-panel.js?v=" + hashlib.sha256((Path(__file__).parent / "frontend" / "casvi-panel.js").read_bytes()).hexdigest()[:12], require_admin=True,
             )
             state["visible"] = True
 
@@ -342,6 +360,7 @@ async def ws_teacher_photo(hass, connection, msg):
 
 
 def async_remove_panel(hass):
+    update_sidebar(hass)
     if not hass.data.get("casvi") and hass.data.get("casvi_panel", {}).get("visible"):
         frontend.async_remove_panel(hass, "colegio")
         hass.data["casvi_panel"]["visible"] = False

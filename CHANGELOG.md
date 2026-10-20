@@ -1,5 +1,17 @@
 # Cambios
 
+## 0.7.3
+
+- El icono lateral de Colegio cambia a un sobre de alerta mientras haya mensajes sin leer entre los consultados, considerando todas las cuentas.
+- Inicio muestra solo los eventos de hoy y un estado vacío cuando no hay ninguno. Los encabezados de eventos y mensajes abren sus secciones.
+- Tarjetas de comedor más compactas, con badges Ayer/Hoy/Mañana antes de la fecha y texto más pequeño.
+- Piscina y educación física se muestran de forma consistente: E. FÍSICA y PSICOMOTRICIDAD cuentan como educación física; EF/NAT y NATACIÓN, como piscina.
+- Corrige la carga del intérprete de horarios en caché y elimina la etiqueta antigua «por confirmar».
+- Enlaces de instalación y configuración desde el README; errores de conexión distinguen DNS, certificados y tiempo de espera sin exponer credenciales.
+- Validación: 78 pruebas Python y 7 JavaScript superadas; vista local con datos de ejemplo revisada.
+
+Actualiza en HACS, reinicia Home Assistant y recarga el panel.
+
 ## 0.7.2
 
 - Corrige las filas completamente vacías al ocultar fines de semana en los calendarios de eventos y comedor, como noviembre de 2026.

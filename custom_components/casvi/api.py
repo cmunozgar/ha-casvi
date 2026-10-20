@@ -1,6 +1,7 @@
 """Read-only Casvi web client; no session material is persisted or logged."""
 from __future__ import annotations
 
+import socket
 import asyncio
 import base64
 import binascii
@@ -172,8 +173,15 @@ class CasviClient:
                     raise SessionExpired("Session redirected or expired")
                 if response.status >= 400:
                     raise CasviError(f"HTTP {response.status}")
-        except (aiohttp.ClientError, TimeoutError) as err:
-            raise CasviError("Cannot connect to Casvi") from err
+        except TimeoutError as err:
+            raise CasviError("Cannot connect to Casvi: request timed out (30 seconds)") from err
+        except aiohttp.ClientSSLError as err:
+            raise CasviError("Cannot connect to Casvi: TLS/certificate verification failed") from err
+        except aiohttp.ClientConnectorError as err:
+            reason = "DNS resolution failed" if isinstance(err.os_error, socket.gaierror) else "connection failed"
+            raise CasviError(f"Cannot connect to Casvi: {reason}") from err
+        except aiohttp.ClientError as err:
+            raise CasviError(f"Cannot connect to Casvi: {type(err).__name__}") from err
         if raw.strip().strip('"') == "caducado" or (path != "/" and 'id="login_form"' in raw):
             raise SessionExpired("Session expired")
         if text:
